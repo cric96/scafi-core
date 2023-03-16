@@ -1,14 +1,14 @@
 /*
  * Copyright (C) 2016-2019, Roberto Casadei, Mirko Viroli, and contributors.
  * See the LICENSE file distributed with this work for additional information regarding copyright ownership.
-*/
+ */
 
 package it.unibo.scafi.test.unit
 
 import it.unibo.scafi.test.CoreTestIncarnation
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-
+import it.unibo.scafi.core.Slot._
 class TestExecutionMachinery extends AnyFunSpec with Matchers {
 
   describe("Execution machinery") {
@@ -53,7 +53,7 @@ class TestExecutionMachinery extends AnyFunSpec with Matchers {
         s2.isFolding shouldBe true
       }
 
-      it("should work as a stack"){
+      it("should work as a stack") {
         // ARRANGE
         val status = VMStatus()
 
@@ -66,7 +66,7 @@ class TestExecutionMachinery extends AnyFunSpec with Matchers {
         val s6 = s5.pop()
 
         // ASSERT
-        intercept[Exception]{ s6.pop() }
+        intercept[Exception](s6.pop())
 
         s4.index shouldBe 1
         s4.neighbour shouldEqual Some(8)
@@ -81,7 +81,7 @@ class TestExecutionMachinery extends AnyFunSpec with Matchers {
         s6.path.matches(/ / Nbr(2))
       }
 
-      it("should use indexes to avoid clashes"){
+      it("should use indexes to avoid clashes") {
         // ARRANGE
         val status = VMStatus()
 

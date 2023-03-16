@@ -5,10 +5,10 @@
 
 package it.unibo.scafi.test.functional
 
-import it.unibo.scafi.core.SimpleSensorId
 import it.unibo.scafi.test.CoreTestIncarnation._
 import it.unibo.scafi.test.CoreTestUtils._
 import it.unibo.scafi.core.SimpleSensorId._
+import it.unibo.scafi.core.Slot._
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 

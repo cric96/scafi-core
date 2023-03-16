@@ -7,6 +7,7 @@ package it.unibo.scafi.core
 
 import it.unibo.scafi.PlatformDependentConstants
 
+import it.unibo.scafi.core.Slot._
 import scala.util.control.Exception._
 
 /**
@@ -28,27 +29,6 @@ trait Semantics extends Core with Language {
   type FACTORY <: Factory
 
   implicit val factory: Factory
-
-  sealed trait Slot {
-    def ->(v: Any): (Path, Any) = (factory.path(this), v)
-    def /(s: Slot): Path = factory.path(this, s)
-  }
-  final case class Nbr(index: Int) extends Slot
-  final case class Rep(index: Int) extends Slot
-  final case class FunCall(index: Int, funId: Any) extends Slot
-  final case class FoldHood(index: Int) extends Slot
-  final case class Branch(index: Int, tag: Boolean) extends Slot
-
-  trait Path {
-    def push(slot: Slot): Path
-    def pull(): Path
-    def matches(path: Path): Boolean
-    def isRoot: Boolean
-    def head: Slot
-    def path: List[Slot]
-
-    def /(slot: Slot): Path = push(slot)
-  }
 
   trait ExportOps { self: EXPORT =>
     def put[A](path: Path, value: A): A
