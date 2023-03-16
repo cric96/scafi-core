@@ -9,6 +9,7 @@ import it.unibo.scafi.test.CoreTestIncarnation
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import it.unibo.scafi.core.Slot._
+import it.unibo.scafi.core.VMStatus
 class TestExecutionMachinery extends AnyFunSpec with Matchers {
 
   describe("Execution machinery") {
