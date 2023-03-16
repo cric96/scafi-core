@@ -11,24 +11,9 @@ package it.unibo.scafi.core
  */
 
 trait Core {
-  /**
-   *  The input of a computation round in a node
-   *  Bounded as of Context interface
-   */
-  type CONTEXT <: Context
 
   /**
    *  A computation round, as an I/O function
    */
-  type EXECUTION <: (CONTEXT => Export)
-
-  /**
-    * A generic "context" affecting device-local execution of a ScaFi program.
-    */
-  trait Context {
-    def selfId: Int
-    def exports(): Iterable[(Int, Export)]
-    def sense[T](localSensorName: SensorId): Option[T]
-    def nbrSense[T](nbrSensorName: SensorId)(nbr: Int): Option[T] = sense[Int => T](nbrSensorName).map(_(nbr))
-  }
+  type EXECUTION <: (Context => Export)
 }

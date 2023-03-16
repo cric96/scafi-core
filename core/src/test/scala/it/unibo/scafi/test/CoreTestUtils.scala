@@ -6,7 +6,7 @@
 package it.unibo.scafi.test
 
 import CoreTestIncarnation._
-import it.unibo.scafi.core.{Export, SensorId, SimpleSensorId}
+import it.unibo.scafi.core.{ContextImpl, Export, SensorId, SimpleSensorId}
 import org.scalactic.Equality
 
 import scala.collection.mutable

@@ -5,9 +5,8 @@
 
 package it.unibo.scafi.core
 
-import it.unibo.scafi.PlatformDependentConstants
-
 import it.unibo.scafi.core.Slot._
+
 import scala.util.control.Exception._
 
 /**
@@ -22,23 +21,10 @@ import scala.util.control.Exception._
   */
 
 trait Semantics extends Core with Language {
-
-  override type CONTEXT <: Context with ContextOps
   override type EXECUTION <: ExecutionTemplate
   type FACTORY <: Factory
 
   implicit val factory: Factory
-
-  trait ExportOps { self: Export =>
-    def put[A](path: Path, value: A): A
-    def get[A](path: Path): Option[A]
-    def paths: Map[Path, Any]
-    def getMap[A]: Map[Path, A] = paths.view.mapValues(_.asInstanceOf[A]).toMap
-  }
-
-  trait ContextOps { self: CONTEXT =>
-    def readSlot[A](i: Int, p: Path): Option[A]
-  }
 
   trait Factory {
     def emptyPath(): Path
@@ -50,7 +36,7 @@ trait Semantics extends Core with Language {
         exports: Map[Int, Export],
         lsens: Map[SensorId, Any] = Map.empty,
         nbsens: Map[SensorId, Map[Int, Any]] = Map.empty
-    ): CONTEXT
+    ): Context
     def /(): Path = emptyPath()
     def /(s: Slot): Path = path(s)
   }
@@ -67,14 +53,14 @@ trait Semantics extends Core with Language {
   /**
     * It implements the whole operational semantics.
     */
-  trait ExecutionTemplate extends (CONTEXT => Export) with ConstructsSemantics with ProgramSchema {
+  trait ExecutionTemplate extends (Context => Export) with ConstructsSemantics with ProgramSchema {
 
     var vm: RoundVM = _
 
-    def apply(c: CONTEXT): Export =
+    def apply(c: Context): Export =
       round(c, main())
 
-    def round(c: CONTEXT, e: => Any = main()): Export = {
+    def round(c: Context, e: => Any = main()): Export = {
       vm = new RoundVMImpl(c)
       val result = e
       vm.registerRoot(result)
@@ -127,7 +113,7 @@ trait Semantics extends Core with Language {
   }
 
   trait RoundVM {
-    def context: CONTEXT
+    def context: Context
 
     def exportStack: List[Export]
 
@@ -161,7 +147,9 @@ trait Semantics extends Core with Language {
 
     def neighbourSense[A](name: SensorId): A = {
       RoundVM.ensure(neighbour.isDefined, "Neighbouring sensor must be queried in a nbr-dependent context.")
-      context.nbrSense(name)(neighbour.get).getOrElse(throw new NbrSensorUnknownException(self, name, neighbour.get))
+      context
+        .neighborhoodSense(name)(neighbour.get)
+        .getOrElse(throw new NbrSensorUnknownException(self, name, neighbour.get))
     }
 
     def foldedEval[A](expr: => A)(id: Int): Option[A]
@@ -191,7 +179,7 @@ trait Semantics extends Core with Language {
     }
   }
 
-  class RoundVMImpl(val context: CONTEXT) extends RoundVM {
+  class RoundVMImpl(val context: Context) extends RoundVM {
     var exportStack: List[Export] = List(factory.emptyExport)
     var status: VMStatus = VMStatus()
     var isolated = false // When true, neighbours are scoped out

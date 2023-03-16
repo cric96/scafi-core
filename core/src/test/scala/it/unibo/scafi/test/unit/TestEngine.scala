@@ -6,7 +6,7 @@
 package it.unibo.scafi.test.unit
 
 import it.unibo.scafi.core.Slot._
-import it.unibo.scafi.core.{Export, Path, PathImpl, SensorId}
+import it.unibo.scafi.core.{ContextImpl, Export, Path, PathImpl, SensorId}
 import it.unibo.scafi.test.{CoreTestIncarnation, CoreTestUtils}
 import org.scalatest.funspec.AnyFunSpec
 import it.unibo.scafi.core.SimpleSensorId._
