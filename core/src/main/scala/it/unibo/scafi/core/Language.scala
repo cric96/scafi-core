@@ -10,28 +10,31 @@ package it.unibo.scafi.core
  * It defines a trait with the "syntax" of language constructs (based on field-calculus)
  */
 
-trait Language { self: Core =>
+trait Language {
 
   /**
-   * A field-calculus "behaviour" inherits from this trait.
-   * Differences wrt the paper version are:
-   * - foldhood is given a "universal quantification" semantics
-   * - neighbour exposes whether we are in one such quantification
-   * - mid is so foundational that we put it here
-   *
-   * A consequence is that we do not have field types,
-   * only locals: so we integrate at best with Scala
-   */
-  trait Constructs {
-    def nbr[A](expr: => A): A
-    def rep[A](init: => A)(fun: (A) => A): A
-    def foldhood[A](init: => A)(aggr: (A, A) => A)(expr: => A): A
-    def branch[A](cond: => Boolean)(th: => A)(el: => A): A
+    * A field-calculus "behaviour" inherits from this trait.
+    * Differences wrt the paper version are:
+    * - foldhood is given a "universal quantification" semantics
+    * - neighbour exposes whether we are in one such quantification
+    * - mid is so foundational that we put it here
+    *
+    * A consequence is that we do not have field types,
+    * only locals: so we integrate at best with Scala
+    */
+  def nbr[A](expr: => A): A
 
-    // Contextual, but foundational
-    def mid(): Int
-    def sense[A](name: SensorId): A
-    def nbrvar[A](name: SensorId): A
-  }
+  def rep[A](init: => A)(fun: (A) => A): A
+
+  def foldhood[A](init: => A)(aggr: (A, A) => A)(expr: => A): A
+
+  def branch[A](cond: => Boolean)(th: => A)(el: => A): A
+
+  // Contextual, but foundational
+  def mid(): Int
+
+  def sense[A](name: SensorId): A
+
+  def nbrvar[A](name: SensorId): A
 
 }

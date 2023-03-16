@@ -20,18 +20,12 @@ import scala.util.control.Exception._
   * This is still abstract in that we do not dictate how Context and Export are implemented and optimised internally
   */
 
-abstract class Semantics(val factory: ExportFactory) extends Core with Language {
-  override type EXECUTION <: ExecutionTemplate
+abstract class Semantics(val factory: ExportFactory) {
 
   trait ProgramSchema {
     type MainResult
     def main(): MainResult
   }
-
-  trait AggregateProgramSchema extends ProgramSchema {
-    self: Constructs =>
-  }
-
   /**
     * It implements the whole operational semantics.
     */
@@ -50,7 +44,7 @@ abstract class Semantics(val factory: ExportFactory) extends Core with Language 
     }
   }
 
-  trait ConstructsSemantics extends Constructs {
+  trait ConstructsSemantics extends Language {
     def vm: RoundVM
 
     override def mid(): Int = vm.self

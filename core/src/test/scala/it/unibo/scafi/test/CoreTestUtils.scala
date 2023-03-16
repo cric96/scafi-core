@@ -17,7 +17,7 @@ trait CoreTestUtils {
       exports: Map[Int, Export] = Map(),
       lsens: Map[String, Any] = Map(),
       nbsens: Map[String, Map[Int, Any]] = Map()
-  )(implicit node: EXECUTION): ContextImpl = {
+  )(implicit node: ExecutionTemplate): ContextImpl = {
     val localSensorsWithId = lsens.map { case (k, v) => (SimpleSensorId(k): SensorId) -> v }
     val neighborhoodSensorWithId = nbsens.map { case (k, v) =>
       (SimpleSensorId(k): SensorId) -> v
@@ -29,7 +29,7 @@ trait CoreTestUtils {
       nbrs: Map[Int, List[Int]],
       execOrder: Iterable[Int],
       comparer: (T, T) => Boolean = (_: Any) == (_: Any)
-  )(program1: => Any)(program2: => Any)(implicit interpreter: EXECUTION): Boolean = {
+  )(program1: => Any)(program2: => Any)(implicit interpreter: ExecutionTemplate): Boolean = {
     val states = mutable.Map[Int, (Export, Export)]()
     execOrder.foreach { curr =>
       val nbrExports = states.filterKeys(nbrs(curr).contains(_))

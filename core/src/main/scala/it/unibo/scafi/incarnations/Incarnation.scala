@@ -5,18 +5,16 @@
 
 package it.unibo.scafi.incarnations
 
-import it.unibo.scafi.core.{Core, ExportFactory, RichLanguage, Semantics}
+import it.unibo.scafi.core.{Builtins, ExportFactory, Language, Semantics}
 import it.unibo.scafi.space.BasicSpatialAbstraction
 import it.unibo.scafi.time.TimeAbstraction
 
 abstract class Incarnation(factory: ExportFactory)
     extends Semantics(factory)
-    with Core
-    with RichLanguage
     with BasicSpatialAbstraction
     with TimeAbstraction {
 
-  trait FieldCalculusSyntax extends Constructs with Builtins
+  trait FieldCalculusSyntax extends Language with Builtins
 
   trait AggregateComputation[T] extends ExecutionTemplate with FieldCalculusSyntax with Serializable {
     type MainResult = T
