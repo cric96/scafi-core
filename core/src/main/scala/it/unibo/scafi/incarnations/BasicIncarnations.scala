@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2016-2019, Roberto Casadei, Mirko Viroli, and contributors.
  * See the LICENSE file distributed with this work for additional information regarding copyright ownership.
-*/
+ */
 
 package it.unibo.scafi.incarnations
 
@@ -23,18 +23,6 @@ trait BasicAbstractIncarnation extends Incarnation {
   override type ID = Int
   override type EXECUTION = AggregateInterpreter
 
-  trait BasicStandardSensorNames extends StandardSensorNames {
-    override val LSNS_POSITION: String = "position"
-    override val LSNS_TIME: String = "currentTime"
-    override val LSNS_TIMESTAMP: String = "timestamp"
-    override val LSNS_DELTA_TIME: String = "deltaTime"
-    override val LSNS_RANDOM: String = "randomGenerator"
-    override val NBR_RANGE: String = "nbrRange"
-    override val NBR_DELAY: String = "nbrDelay"
-    override val NBR_LAG: String = "nbrLag"
-    override val NBR_VECTOR: String = "nbrVector"
-  }
-
   override def cnameFromString(s: String): CNAME = s
 
   @transient implicit override val linearID: Linearizable[ID] = new Linearizable[ID] {
@@ -51,8 +39,4 @@ trait BasicAbstractIncarnation extends Incarnation {
   }
 }
 
-class AbstractTestIncarnation
-  extends BasicAbstractIncarnation
-    with BasicSpatialAbstraction
-    with BasicTimeAbstraction {
-}
+class AbstractTestIncarnation extends BasicAbstractIncarnation with BasicSpatialAbstraction with BasicTimeAbstraction {}
