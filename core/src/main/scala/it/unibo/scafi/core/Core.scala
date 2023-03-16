@@ -17,12 +17,6 @@ trait Core {
   type ID
 
   /**
-   *  The output of a computation round in a node
-   *  Bounded to have at least a root element, as of Export interface
-   */
-  type EXPORT <: Export
-
-  /**
    *  The input of a computation round in a node
    *  Bounded as of Context interface
    */
@@ -31,26 +25,14 @@ trait Core {
   /**
    *  A computation round, as an I/O function
    */
-  type EXECUTION <: (CONTEXT => EXPORT)
-
-  /**
-    * A generic "export", i.e., a coordination message to be emitted.
-    */
-  trait Export {
-    /**
-      * The root of the export
-      * @tparam A
-      * @return the root of the export structure, cast to type A
-      */
-    def root[A](): A
-  }
+  type EXECUTION <: (CONTEXT => Export)
 
   /**
     * A generic "context" affecting device-local execution of a ScaFi program.
     */
   trait Context {
     def selfId: ID
-    def exports(): Iterable[(ID, EXPORT)]
+    def exports(): Iterable[(ID, Export)]
     def sense[T](localSensorName: SensorId): Option[T]
     def nbrSense[T](nbrSensorName: SensorId)(nbr: ID): Option[T] = sense[ID => T](nbrSensorName).map(_(nbr))
   }

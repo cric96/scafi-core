@@ -5,7 +5,7 @@
 
 package it.unibo.scafi.platform
 
-import it.unibo.scafi.core.{Core, Engine, SensorId}
+import it.unibo.scafi.core.{Core, Engine, Export, SensorId}
 import it.unibo.scafi.space.MetricSpatialAbstraction
 import it.unibo.scafi.time.TimeAbstraction
 
@@ -69,8 +69,8 @@ trait SimulationPlatform extends SpaceTimeAwarePlatform {
     def neighbourhood(id: ID): Set[ID]
     def localSensor[A](name: SensorId)(id: ID): A
     def nbrSensor[A](name: SensorId)(id: ID)(idn: ID): A
-    def export(id: ID): Option[EXPORT]
-    def exports(): Map[ID, Option[EXPORT]]
+    def export(id: ID): Option[Export]
+    def exports(): Map[ID, Option[Export]]
     def sensorState(
         filter: (SensorId, ID) => Boolean = (s, n) => true
     ): collection.Map[SensorId, collection.Map[ID, Any]]

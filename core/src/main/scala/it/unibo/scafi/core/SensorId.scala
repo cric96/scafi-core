@@ -1,5 +1,7 @@
 package it.unibo.scafi.core
 
+import scala.language.implicitConversions
+
 trait SensorId
 
 case class SimpleSensorId(name: String) extends SensorId

@@ -6,7 +6,7 @@
 package it.unibo.scafi.test.unit
 
 import it.unibo.scafi.core.Slot._
-import it.unibo.scafi.core.{Path, SensorId}
+import it.unibo.scafi.core.{Export, Path, PathImpl, SensorId}
 import it.unibo.scafi.test.{CoreTestIncarnation, CoreTestUtils}
 import org.scalatest.funspec.AnyFunSpec
 import it.unibo.scafi.core.SimpleSensorId._
@@ -25,7 +25,7 @@ class TestEngine extends AnyFunSpec with Matchers with CoreTestUtils {
     describe("Export implementation") {
       it("should support the reading and writing of exports") {
         // ARRANGE
-        val exp: Export with ExportOps = factory.emptyExport()
+        val exp: Export = factory.emptyExport()
         val path1 = factory.path(Nbr(0), Rep(0))
 
         // ASSERT (initial, empty state)

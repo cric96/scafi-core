@@ -48,7 +48,6 @@ class TestSemanticsByRound extends AnyFunSpec with Matchers {
     def expr1 = 1
     def expr2 = rep(7)(_ + 1)
     def expr3 = foldhood(0)(_ + _)(nbr(sense[Int]("sensor")))
-
     /* Given expr 'e' produces exports 'o'
      * What exports are produced by 'e + e + e + e' ?
      */

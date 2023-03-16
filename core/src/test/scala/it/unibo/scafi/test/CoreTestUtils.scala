@@ -6,7 +6,7 @@
 package it.unibo.scafi.test
 
 import CoreTestIncarnation._
-import it.unibo.scafi.core.{SimpleSensorId, SensorId}
+import it.unibo.scafi.core.{Export, SensorId, SimpleSensorId}
 import org.scalactic.Equality
 
 import scala.collection.mutable
@@ -14,7 +14,7 @@ import scala.collection.mutable
 trait CoreTestUtils {
   def ctx(
       selfId: Int,
-      exports: Map[Int, EXPORT] = Map(),
+      exports: Map[Int, Export] = Map(),
       lsens: Map[String, Any] = Map(),
       nbsens: Map[String, Map[Int, Any]] = Map()
   )(implicit node: EXECUTION): ContextImpl = {
@@ -28,7 +28,7 @@ trait CoreTestUtils {
       execOrder: Iterable[ID],
       comparer: (T, T) => Boolean = (_: Any) == (_: Any)
   )(program1: => Any)(program2: => Any)(implicit interpreter: EXECUTION): Boolean = {
-    val states = mutable.Map[ID, (EXPORT, EXPORT)]()
+    val states = mutable.Map[ID, (Export, Export)]()
     execOrder.foreach { curr =>
       val nbrExports = states.filterKeys(nbrs(curr).contains(_))
       val currCtx1 = ctx(curr, exports = nbrExports.mapValues(_._1).toMap)
@@ -42,13 +42,6 @@ trait CoreTestUtils {
       states.put(curr, (exp1, exp2))
     }
     true
-  }
-
-  implicit val exportEquality = new Equality[EXPORT] {
-    override def areEqual(e: EXPORT, b: Any): Boolean = e.paths == (b match {
-      case exp: ExportOps => exp.paths
-      case _ => b.toString
-    })
   }
 
   def fullyConnectedTopologyMap(elems: Iterable[ID]): Map[ID, List[ID]] = elems.map(elem => elem -> elems.toList).toMap

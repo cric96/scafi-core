@@ -24,13 +24,12 @@ import scala.util.control.Exception._
 trait Semantics extends Core with Language {
 
   override type CONTEXT <: Context with ContextOps
-  override type EXPORT <: Export with ExportOps
   override type EXECUTION <: ExecutionTemplate
   type FACTORY <: Factory
 
   implicit val factory: Factory
 
-  trait ExportOps { self: EXPORT =>
+  trait ExportOps { self: Export =>
     def put[A](path: Path, value: A): A
     def get[A](path: Path): Option[A]
     def paths: Map[Path, Any]
@@ -43,12 +42,12 @@ trait Semantics extends Core with Language {
 
   trait Factory {
     def emptyPath(): Path
-    def emptyExport(): EXPORT
+    def emptyExport(): Export
     def path(slots: Slot*): Path
-    def export(exps: (Path, Any)*): EXPORT
+    def export(exps: (Path, Any)*): Export
     def context(
         selfId: ID,
-        exports: Map[ID, EXPORT],
+        exports: Map[ID, Export],
         lsens: Map[SensorId, Any] = Map.empty,
         nbsens: Map[SensorId, Map[ID, Any]] = Map.empty
     ): CONTEXT
@@ -68,14 +67,14 @@ trait Semantics extends Core with Language {
   /**
     * It implements the whole operational semantics.
     */
-  trait ExecutionTemplate extends (CONTEXT => EXPORT) with ConstructsSemantics with ProgramSchema {
+  trait ExecutionTemplate extends (CONTEXT => Export) with ConstructsSemantics with ProgramSchema {
 
     var vm: RoundVM = _
 
-    def apply(c: CONTEXT): EXPORT =
+    def apply(c: CONTEXT): Export =
       round(c, main())
 
-    def round(c: CONTEXT, e: => Any = main()): EXPORT = {
+    def round(c: CONTEXT, e: => Any = main()): Export = {
       vm = new RoundVMImpl(c)
       val result = e
       vm.registerRoot(result)
@@ -130,11 +129,11 @@ trait Semantics extends Core with Language {
   trait RoundVM {
     def context: CONTEXT
 
-    def exportStack: List[EXPORT]
+    def exportStack: List[Export]
 
     def status: VMStatus
 
-    def export: EXPORT =
+    def export: Export =
       exportStack.head
 
     def self: ID =
@@ -193,7 +192,7 @@ trait Semantics extends Core with Language {
   }
 
   class RoundVMImpl(val context: CONTEXT) extends RoundVM {
-    var exportStack: List[EXPORT] = List(factory.emptyExport)
+    var exportStack: List[Export] = List(factory.emptyExport)
     var status: VMStatus = VMStatus()
     var isolated = false // When true, neighbours are scoped out
 
