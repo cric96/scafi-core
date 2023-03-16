@@ -4,9 +4,7 @@
  */
 
 package it.unibo.scafi.test
-
-import CoreTestIncarnation._
-import it.unibo.scafi.core.{ContextImpl, Export, SensorId, SimpleSensorId}
+import it.unibo.scafi.core.{ContextImpl, Export, FieldCalculusInterpreter, SensorId, SimpleSensorId}
 import org.scalactic.Equality
 
 import scala.collection.mutable
@@ -17,7 +15,7 @@ trait CoreTestUtils {
       exports: Map[Int, Export] = Map(),
       lsens: Map[String, Any] = Map(),
       nbsens: Map[String, Map[Int, Any]] = Map()
-  )(implicit node: ExecutionTemplate): ContextImpl = {
+  )(implicit node: FieldCalculusInterpreter): ContextImpl = {
     val localSensorsWithId = lsens.map { case (k, v) => (SimpleSensorId(k): SensorId) -> v }
     val neighborhoodSensorWithId = nbsens.map { case (k, v) =>
       (SimpleSensorId(k): SensorId) -> v
@@ -29,7 +27,7 @@ trait CoreTestUtils {
       nbrs: Map[Int, List[Int]],
       execOrder: Iterable[Int],
       comparer: (T, T) => Boolean = (_: Any) == (_: Any)
-  )(program1: => Any)(program2: => Any)(implicit interpreter: ExecutionTemplate): Boolean = {
+  )(program1: => Any)(program2: => Any)(implicit interpreter: FieldCalculusInterpreter): Boolean = {
     val states = mutable.Map[Int, (Export, Export)]()
     execOrder.foreach { curr =>
       val nbrExports = states.filterKeys(nbrs(curr).contains(_))

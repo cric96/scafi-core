@@ -5,7 +5,7 @@
 
 package it.unibo.scafi.test.functional
 
-import it.unibo.scafi.test.CoreTestIncarnation._
+import it.unibo.scafi.core.FieldCalculusInterpreter
 import it.unibo.scafi.test.CoreTestUtils._
 import it.unibo.scafi.core.SimpleSensorId._
 import it.unibo.scafi.core.Slot._
@@ -17,7 +17,8 @@ class TestSemanticsByRound extends AnyFunSpec with Matchers {
   val LocalValues, Alignment, Exports, FOLDHOOD, NBR, REP, BRANCH, SENSE, MID, NBRVAR, BUILTIN, Nesting,
       DeferredExports = new ItWord
 
-  implicit val node = new BasicAggregateInterpreter
+  implicit val node = new FieldCalculusInterpreter {}
+  val factory = node.factory
   import factory._
   import node._
 

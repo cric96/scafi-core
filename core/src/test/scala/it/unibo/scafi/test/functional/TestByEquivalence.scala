@@ -5,8 +5,7 @@
 
 package it.unibo.scafi.test.functional
 
-import it.unibo.scafi.test.CoreTestIncarnation._
-import it.unibo.scafi.test.CoreTestUtils
+import it.unibo.scafi.test.{CoreTestInterpreter, CoreTestUtils}
 import org.scalatest._
 
 import scala.util.Random
@@ -17,7 +16,7 @@ class TestByEquivalence extends AnyFunSpec with Matchers {
 
   val checkThat = new ItWord
 
-  implicit val node = new BasicAggregateInterpreter
+  implicit val node = CoreTestInterpreter
   import CoreTestUtils._
   import node._
 

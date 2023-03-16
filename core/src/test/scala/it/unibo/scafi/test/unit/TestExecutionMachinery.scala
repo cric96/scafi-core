@@ -5,19 +5,16 @@
 
 package it.unibo.scafi.test.unit
 
-import it.unibo.scafi.test.CoreTestIncarnation
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import it.unibo.scafi.core.Slot._
 import it.unibo.scafi.core.VMStatus
+import it.unibo.scafi.test.CoreTestInterpreter
 class TestExecutionMachinery extends AnyFunSpec with Matchers {
 
   describe("Execution machinery") {
 
-    def getSemantics = CoreTestIncarnation
-
-    val semantics = getSemantics
-    import semantics._
+    val factory = CoreTestInterpreter.factory
     import factory./
 
     describe("Status implementation") {

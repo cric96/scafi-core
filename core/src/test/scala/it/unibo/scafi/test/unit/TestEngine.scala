@@ -7,7 +7,7 @@ package it.unibo.scafi.test.unit
 
 import it.unibo.scafi.core.Slot._
 import it.unibo.scafi.core.{ContextImpl, Export, Path, PathImpl, SensorId}
-import it.unibo.scafi.test.{CoreTestIncarnation, CoreTestUtils}
+import it.unibo.scafi.test.{CoreTestInterpreter, CoreTestUtils}
 import org.scalatest.funspec.AnyFunSpec
 import it.unibo.scafi.core.SimpleSensorId._
 import org.scalatest.matchers.should.Matchers
@@ -16,9 +16,8 @@ class TestEngine extends AnyFunSpec with Matchers with CoreTestUtils {
 
   describe("ConcreteSemantics") {
 
-    def getEngine = CoreTestIncarnation
-
-    val engine = getEngine
+    val engine = CoreTestInterpreter
+    val factory = engine.factory
     import engine._
     import factory./
 

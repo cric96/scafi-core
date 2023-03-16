@@ -36,5 +36,4 @@ trait Language {
   def sense[A](name: SensorId): A
 
   def nbrvar[A](name: SensorId): A
-
 }
