@@ -6,20 +6,10 @@
 package it.unibo.scafi.incarnations
 
 import it.unibo.scafi.core.{Core, Engine, RichLanguage}
-import it.unibo.scafi.platform.SpaceTimeAwarePlatform
 import it.unibo.scafi.space.BasicSpatialAbstraction
 import it.unibo.scafi.time.TimeAbstraction
 
-import scala.concurrent.duration.FiniteDuration
-import scala.util.Random
-
-trait Incarnation
-    extends Core
-    with Engine
-    with RichLanguage
-    with SpaceTimeAwarePlatform
-    with BasicSpatialAbstraction
-    with TimeAbstraction {
+trait Incarnation extends Core with Engine with RichLanguage with BasicSpatialAbstraction with TimeAbstraction {
 
   trait FieldCalculusSyntax extends Constructs with Builtins
 
