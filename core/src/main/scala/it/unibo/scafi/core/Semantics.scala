@@ -37,7 +37,7 @@ trait Semantics extends Core with Language {
   }
 
   trait ContextOps { self: CONTEXT =>
-    def readSlot[A](i: ID, p: Path): Option[A]
+    def readSlot[A](i: Int, p: Path): Option[A]
   }
 
   trait Factory {
@@ -46,10 +46,10 @@ trait Semantics extends Core with Language {
     def path(slots: Slot*): Path
     def export(exps: (Path, Any)*): Export
     def context(
-        selfId: ID,
-        exports: Map[ID, Export],
+        selfId: Int,
+        exports: Map[Int, Export],
         lsens: Map[SensorId, Any] = Map.empty,
-        nbsens: Map[SensorId, Map[ID, Any]] = Map.empty
+        nbsens: Map[SensorId, Map[Int, Any]] = Map.empty
     ): CONTEXT
     def /(): Path = emptyPath()
     def /(s: Slot): Path = path(s)
@@ -85,7 +85,7 @@ trait Semantics extends Core with Language {
   trait ConstructsSemantics extends Constructs {
     def vm: RoundVM
 
-    override def mid(): ID = vm.self
+    override def mid(): Int = vm.self
 
     override def rep[A](init: => A)(fun: (A) => A): A = {
       vm.nest(Rep(vm.index))(write = vm.unlessFoldingOnOthers) {
@@ -136,13 +136,13 @@ trait Semantics extends Core with Language {
     def export: Export =
       exportStack.head
 
-    def self: ID =
+    def self: Int =
       context.selfId
 
     def registerRoot(v: Any): Unit =
       export.put(factory.emptyPath, v)
 
-    def neighbour: Option[ID] =
+    def neighbour: Option[Int] =
       status.neighbour
 
     def index: Int =
@@ -164,13 +164,13 @@ trait Semantics extends Core with Language {
       context.nbrSense(name)(neighbour.get).getOrElse(throw new NbrSensorUnknownException(self, name, neighbour.get))
     }
 
-    def foldedEval[A](expr: => A)(id: ID): Option[A]
+    def foldedEval[A](expr: => A)(id: Int): Option[A]
 
     def nest[A](slot: Slot)(write: Boolean, inc: Boolean = true)(expr: => A): A
 
     def locally[A](a: => A): A
 
-    def alignedNeighbours(): List[ID]
+    def alignedNeighbours(): List[Int]
 
     def isolate[A](expr: => A): A
 
@@ -196,7 +196,7 @@ trait Semantics extends Core with Language {
     var status: VMStatus = VMStatus()
     var isolated = false // When true, neighbours are scoped out
 
-    override def foldedEval[A](expr: => A)(id: ID): Option[A] =
+    override def foldedEval[A](expr: => A)(id: Int): Option[A] =
       handling(classOf[OutOfDomainException]) by (_ => None) apply {
         try {
           status = status.push()
@@ -221,7 +221,7 @@ trait Semantics extends Core with Language {
       } finally status = status.foldInto(currentNeighbour)
     }
 
-    override def alignedNeighbours(): List[ID] =
+    override def alignedNeighbours(): List[Int] =
       if (isolated) {
         List()
       } else {
@@ -253,10 +253,10 @@ trait Semantics extends Core with Language {
   trait VMStatus {
     val path: Path
     val index: Int
-    val neighbour: Option[ID]
+    val neighbour: Option[Int]
 
     def isFolding: Boolean
-    def foldInto(id: Option[ID]): VMStatus
+    def foldInto(id: Option[Int]): VMStatus
     def foldOut(): VMStatus
     def nest(s: Slot): VMStatus
     def incIndex(): VMStatus
@@ -271,12 +271,12 @@ trait Semantics extends Core with Language {
   final private case class VMStatusImpl(
       path: Path = factory.emptyPath(),
       index: Int = 0,
-      neighbour: Option[ID] = None,
-      stack: List[(Path, Int, Option[ID])] = List()
+      neighbour: Option[Int] = None,
+      stack: List[(Path, Int, Option[Int])] = List()
   ) extends VMStatus {
 
     def isFolding: Boolean = neighbour.isDefined
-    def foldInto(id: Option[ID]): VMStatus = VMStatusImpl(path, index, id, stack)
+    def foldInto(id: Option[Int]): VMStatus = VMStatusImpl(path, index, id, stack)
     def foldOut(): VMStatus = VMStatusImpl(path, index, None, stack)
     def push(): VMStatus = VMStatusImpl(path, index, neighbour, (path, index, neighbour) :: stack)
     def pop(): VMStatus = stack match {
@@ -287,15 +287,15 @@ trait Semantics extends Core with Language {
     def incIndex(): VMStatus = VMStatusImpl(path, index + 1, neighbour, stack)
   }
 
-  final case class OutOfDomainException(selfId: ID, nbr: ID, path: Path) extends Exception() {
+  final case class OutOfDomainException(selfId: Int, nbr: Int, path: Path) extends Exception() {
     override def toString: String = s"OutOfDomainException: $selfId , $nbr, $path"
   }
 
-  final case class SensorUnknownException(selfId: ID, name: SensorId) extends Exception() {
+  final case class SensorUnknownException(selfId: Int, name: SensorId) extends Exception() {
     override def toString: String = s"SensorUnknownException: $selfId , $name"
   }
 
-  final case class NbrSensorUnknownException(selfId: ID, name: SensorId, nbr: ID) extends Exception() {
+  final case class NbrSensorUnknownException(selfId: Int, name: SensorId, nbr: Int) extends Exception() {
     override def toString: String = s"NbrSensorUnknownException: $selfId , $name, $nbr"
   }
 }

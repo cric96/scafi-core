@@ -55,7 +55,7 @@ class TestEngine extends AnyFunSpec with Matchers with CoreTestUtils {
         val pathNbr = factory.emptyPath().push(Nbr(0))
         val exportForId5 = factory.export(pathNbr -> "five")
         val localSensors: Map[SensorId, Any] = Map(("s1": SensorId) -> 77, ("s1": SensorId) -> false)
-        val neighborhoodSensors: Map[SensorId, Map[ID, Any]] = Map(("x": SensorId) -> Map(4 -> false))
+        val neighborhoodSensors: Map[SensorId, Map[Int, Any]] = Map(("x": SensorId) -> Map(4 -> false))
         val ctx = new ContextImpl(
           selfId = 1,
           exports = Map(1 -> exportForId1, 5 -> exportForId5),

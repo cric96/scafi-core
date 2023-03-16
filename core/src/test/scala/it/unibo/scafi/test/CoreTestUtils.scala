@@ -19,16 +19,18 @@ trait CoreTestUtils {
       nbsens: Map[String, Map[Int, Any]] = Map()
   )(implicit node: EXECUTION): ContextImpl = {
     val localSensorsWithId = lsens.map { case (k, v) => (SimpleSensorId(k): SensorId) -> v }
-    val neighborhoodSensorWithId = nbsens.map { case (k, v) => (SimpleSensorId(k): SensorId) -> v }
+    val neighborhoodSensorWithId = nbsens.map { case (k, v) =>
+      (SimpleSensorId(k): SensorId) -> v
+    }
     new ContextImpl(selfId, exports, localSensorsWithId, neighborhoodSensorWithId)
   }
 
   def assertEquivalence[T](
-      nbrs: Map[ID, List[ID]],
-      execOrder: Iterable[ID],
+      nbrs: Map[Int, List[Int]],
+      execOrder: Iterable[Int],
       comparer: (T, T) => Boolean = (_: Any) == (_: Any)
   )(program1: => Any)(program2: => Any)(implicit interpreter: EXECUTION): Boolean = {
-    val states = mutable.Map[ID, (Export, Export)]()
+    val states = mutable.Map[Int, (Export, Export)]()
     execOrder.foreach { curr =>
       val nbrExports = states.filterKeys(nbrs(curr).contains(_))
       val currCtx1 = ctx(curr, exports = nbrExports.mapValues(_._1).toMap)
@@ -44,7 +46,8 @@ trait CoreTestUtils {
     true
   }
 
-  def fullyConnectedTopologyMap(elems: Iterable[ID]): Map[ID, List[ID]] = elems.map(elem => elem -> elems.toList).toMap
+  def fullyConnectedTopologyMap(elems: Iterable[Int]): Map[Int, List[Int]] =
+    elems.map(elem => elem -> elems.toList).toMap
 }
 
 object CoreTestUtils extends CoreTestUtils

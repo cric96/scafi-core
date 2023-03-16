@@ -65,18 +65,18 @@ trait SimulationPlatform extends SpaceTimeAwarePlatform {
   type NETWORK <: Network
 
   trait Network {
-    def ids: Set[ID]
-    def neighbourhood(id: ID): Set[ID]
-    def localSensor[A](name: SensorId)(id: ID): A
-    def nbrSensor[A](name: SensorId)(id: ID)(idn: ID): A
-    def export(id: ID): Option[Export]
-    def exports(): Map[ID, Option[Export]]
+    def ids: Set[Int]
+    def neighbourhood(id: Int): Set[Int]
+    def localSensor[A](name: SensorId)(id: Int): A
+    def nbrSensor[A](name: SensorId)(id: Int)(idn: Int): A
+    def export(id: Int): Option[Export]
+    def exports(): Map[Int, Option[Export]]
     def sensorState(
-        filter: (SensorId, ID) => Boolean = (s, n) => true
-    ): collection.Map[SensorId, collection.Map[ID, Any]]
+        filter: (SensorId, Int) => Boolean = (s, n) => true
+    ): collection.Map[SensorId, collection.Map[Int, Any]]
     def neighbouringSensorState(
-        filter: (SensorId, ID, ID) => Boolean = (s, n, nbr) => true
-    ): collection.Map[SensorId, collection.Map[ID, collection.Map[ID, Any]]]
+        filter: (SensorId, Int, Int) => Boolean = (s, n, nbr) => true
+    ): collection.Map[SensorId, collection.Map[Int, collection.Map[Int, Any]]]
   }
 }
 

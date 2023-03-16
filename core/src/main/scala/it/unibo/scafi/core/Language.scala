@@ -29,7 +29,7 @@ trait Language { self: Core =>
     def branch[A](cond: => Boolean)(th: => A)(el: => A): A
 
     // Contextual, but foundational
-    def mid(): ID
+    def mid(): Int
     def sense[A](name: SensorId): A
     def nbrvar[A](name: SensorId): A
   }

@@ -12,11 +12,6 @@ package it.unibo.scafi.core
 
 trait Core {
   /**
-   *  The unique identifier of a node
-   */
-  type ID
-
-  /**
    *  The input of a computation round in a node
    *  Bounded as of Context interface
    */
@@ -31,9 +26,9 @@ trait Core {
     * A generic "context" affecting device-local execution of a ScaFi program.
     */
   trait Context {
-    def selfId: ID
-    def exports(): Iterable[(ID, Export)]
+    def selfId: Int
+    def exports(): Iterable[(Int, Export)]
     def sense[T](localSensorName: SensorId): Option[T]
-    def nbrSense[T](nbrSensorName: SensorId)(nbr: ID): Option[T] = sense[ID => T](nbrSensorName).map(_(nbr))
+    def nbrSense[T](nbrSensorName: SensorId)(nbr: Int): Option[T] = sense[Int => T](nbrSensorName).map(_(nbr))
   }
 }

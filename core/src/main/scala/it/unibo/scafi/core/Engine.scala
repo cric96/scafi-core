@@ -19,23 +19,23 @@ trait Engine extends Semantics {
 
   implicit override val factory: EngineFactory = new EngineFactory
 
-  abstract class BaseContextImpl(val selfId: ID, _exports: Iterable[(ID, Export)]) extends Context with ContextOps {
+  abstract class BaseContextImpl(val selfId: Int, _exports: Iterable[(Int, Export)]) extends Context with ContextOps {
     self: CONTEXT =>
 
-    private var exportsMap: Map[ID, Export] = _exports.toMap
-    def updateExport(id: ID, export: Export): Unit = exportsMap += id -> export
+    private var exportsMap: Map[Int, Export] = _exports.toMap
+    def updateExport(id: Int, export: Export): Unit = exportsMap += id -> export
 
-    override def exports(): Iterable[(ID, Export)] = exportsMap
+    override def exports(): Iterable[(Int, Export)] = exportsMap
 
-    def readSlot[A](i: ID, p: Path): Option[A] =
+    def readSlot[A](i: Int, p: Path): Option[A] =
       exportsMap get i flatMap (_.get[A](p))
   }
 
   class ContextImpl(
-      selfId: ID,
-      exports: Iterable[(ID, Export)],
+      selfId: Int,
+      exports: Iterable[(Int, Export)],
       val localSensor: Map[SensorId, Any],
-      val nbrSensor: Map[SensorId, Map[ID, Any]]
+      val nbrSensor: Map[SensorId, Map[Int, Any]]
   ) extends BaseContextImpl(selfId, exports) { self: CONTEXT =>
 
     override def toString(): String =
@@ -44,7 +44,7 @@ trait Engine extends Semantics {
     override def sense[T](localSensorName: SensorId): Option[T] =
       localSensor.get(localSensorName).map { case x: T @unchecked => x }
 
-    override def nbrSense[T](nbrSensorName: SensorId)(nbr: ID): Option[T] =
+    override def nbrSense[T](nbrSensorName: SensorId)(nbr: Int): Option[T] =
       nbrSensor.get(nbrSensorName).flatMap(_.get(nbr)).map { case x: T @unchecked => x }
   }
 
@@ -58,14 +58,11 @@ trait Engine extends Semantics {
       exp
     }
     override def context(
-        selfId: ID,
-        exports: Map[ID, Export],
+        selfId: Int,
+        exports: Map[Int, Export],
         lsens: Map[SensorId, Any] = Map.empty,
-        nbsens: Map[SensorId, Map[ID, Any]] = Map.empty
+        nbsens: Map[SensorId, Map[Int, Any]] = Map.empty
     ): CONTEXT =
       new ContextImpl(selfId, exports, lsens, nbsens)
   }
-
-  implicit val linearID: Linearizable[ID]
-  implicit val interopID: Interop[ID]
 }
