@@ -33,12 +33,11 @@ trait Semantics extends Core with Language {
     def ->(v: Any): (Path, Any) = (factory.path(this), v)
     def /(s: Slot): Path = factory.path(this, s)
   }
-  final case class Nbr[A](index: Int) extends Slot
-  final case class Rep[A](index: Int) extends Slot
-  final case class FunCall[A](index: Int, funId: Any) extends Slot
-  final case class FoldHood[A](index: Int) extends Slot
-  final case class Scope[K](key: K) extends Slot
-  final case class Branch[A](index: Int, tag: Boolean) extends Slot
+  final case class Nbr(index: Int) extends Slot
+  final case class Rep(index: Int) extends Slot
+  final case class FunCall(index: Int, funId: Any) extends Slot
+  final case class FoldHood(index: Int) extends Slot
+  final case class Branch(index: Int, tag: Boolean) extends Slot
 
   trait Path {
     def push(slot: Slot): Path
@@ -110,7 +109,7 @@ trait Semantics extends Core with Language {
     override def mid(): ID = vm.self
 
     override def rep[A](init: => A)(fun: (A) => A): A = {
-      vm.nest(Rep[A](vm.index))(write = vm.unlessFoldingOnOthers) {
+      vm.nest(Rep(vm.index))(write = vm.unlessFoldingOnOthers) {
         vm.locally {
           fun(vm.previousRoundVal.getOrElse(init))
         }
@@ -118,7 +117,7 @@ trait Semantics extends Core with Language {
     }
 
     override def foldhood[A](init: => A)(aggr: (A, A) => A)(expr: => A): A = {
-      vm.nest(FoldHood[A](vm.index))(write = true) { // write export always for performance reason on nesting
+      vm.nest(FoldHood(vm.index))(write = true) { // write export always for performance reason on nesting
         val nbrField = vm.alignedNeighbours
           .map(id => vm.foldedEval(expr)(id).getOrElse(vm.locally(init)))
         vm.isolate(nbrField.fold(vm.locally(init))((x, y) => aggr(x, y)))
@@ -127,7 +126,7 @@ trait Semantics extends Core with Language {
 
     override def branch[A](cond: => Boolean)(thn: => A)(els: => A): A = {
       val tag = vm.locally(cond)
-      vm.nest(Branch[A](vm.index, tag))(write = vm.unlessFoldingOnOthers) {
+      vm.nest(Branch(vm.index, tag))(write = vm.unlessFoldingOnOthers) {
         vm.neighbour match {
           case Some(nbr) if nbr != vm.self => vm.neighbourVal
           case _ => if (tag) vm.locally(thn) else vm.locally(els)
@@ -136,7 +135,7 @@ trait Semantics extends Core with Language {
     }
 
     override def nbr[A](expr: => A): A =
-      vm.nest(Nbr[A](vm.index))(write = vm.onlyWhenFoldingOnSelf) {
+      vm.nest(Nbr(vm.index))(write = vm.onlyWhenFoldingOnSelf) {
         vm.neighbour match {
           case Some(nbr) if nbr != vm.self => vm.neighbourVal
           case _ => expr
@@ -262,11 +261,6 @@ trait Semantics extends Core with Language {
         expr
       } finally this.isolated = wasIsolated
     }
-
-    private def localFunctionSlot[T] = status.path
-      .pull()
-      .push(FunCall[T](((status.path.head: @unchecked) match { case x: FunCall[_] => x }).index, FunctionIdPlaceholder))
-    private val FunctionIdPlaceholder = "f"
 
     override def newExportStack: Any = exportStack = factory.emptyExport() :: exportStack
     override def discardExport: Any = exportStack = exportStack.tail
