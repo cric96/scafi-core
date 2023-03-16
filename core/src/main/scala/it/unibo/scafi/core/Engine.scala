@@ -13,9 +13,6 @@ package it.unibo.scafi.core
 
 import it.unibo.utils.{Interop, Linearizable}
 
-import scala.collection.{Map => GMap}
-import scala.collection.mutable.{Map => MMap}
-
 trait Engine extends Semantics {
 
   override type EXPORT = Export with ExportOps
@@ -85,8 +82,8 @@ trait Engine extends Semantics {
   class ContextImpl(
       selfId: ID,
       exports: Iterable[(ID, EXPORT)],
-      val localSensor: GMap[CNAME, Any],
-      val nbrSensor: GMap[CNAME, GMap[ID, Any]]
+      val localSensor: Map[CNAME, Any],
+      val nbrSensor: Map[CNAME, Map[ID, Any]]
   ) extends BaseContextImpl(selfId, exports) { self: CONTEXT =>
 
     override def toString(): String =
