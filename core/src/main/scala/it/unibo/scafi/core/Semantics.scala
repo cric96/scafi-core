@@ -200,8 +200,8 @@ trait Semantics extends Core with Language {
     def discardExport: Any
     def mergeExport: Any
 
-    def unlessFoldingOnOthers: Boolean = neighbour.map(_ == self).getOrElse(true)
-    def onlyWhenFoldingOnSelf: Boolean = neighbour.map(_ == self).getOrElse(false)
+    def unlessFoldingOnOthers: Boolean = neighbour.forall(_ == self)
+    def onlyWhenFoldingOnSelf: Boolean = neighbour.contains(self)
   }
 
   object RoundVM {
