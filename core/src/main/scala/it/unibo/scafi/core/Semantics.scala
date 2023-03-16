@@ -20,26 +20,8 @@ import scala.util.control.Exception._
   * This is still abstract in that we do not dictate how Context and Export are implemented and optimised internally
   */
 
-trait Semantics extends Core with Language {
+abstract class Semantics(val factory: ExportFactory) extends Core with Language {
   override type EXECUTION <: ExecutionTemplate
-  type FACTORY <: Factory
-
-  implicit val factory: Factory
-
-  trait Factory {
-    def emptyPath(): Path
-    def emptyExport(): Export
-    def path(slots: Slot*): Path
-    def export(exps: (Path, Any)*): Export
-    def context(
-        selfId: Int,
-        exports: Map[Int, Export],
-        lsens: Map[SensorId, Any] = Map.empty,
-        nbsens: Map[SensorId, Map[Int, Any]] = Map.empty
-    ): Context
-    def /(): Path = emptyPath()
-    def /(s: Slot): Path = path(s)
-  }
 
   trait ProgramSchema {
     type MainResult

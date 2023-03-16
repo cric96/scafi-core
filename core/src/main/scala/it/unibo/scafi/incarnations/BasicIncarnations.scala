@@ -5,6 +5,7 @@
 
 package it.unibo.scafi.incarnations
 
+import it.unibo.scafi.core.ExportFactory
 import it.unibo.scafi.space.BasicSpatialAbstraction
 import it.unibo.scafi.time.BasicTimeAbstraction
 
@@ -17,8 +18,8 @@ import it.unibo.scafi.time.BasicTimeAbstraction
  * It gives final concrete types for sensor IDs and device IDs
  */
 
-trait BasicAbstractIncarnation extends Incarnation {
+abstract class BasicAbstractIncarnation(factory: ExportFactory) extends Incarnation(factory) {
   override type EXECUTION = AggregateInterpreter
 }
 
-class AbstractTestIncarnation extends BasicAbstractIncarnation with BasicSpatialAbstraction with BasicTimeAbstraction {}
+class AbstractTestIncarnation extends BasicAbstractIncarnation(ExportFactory())
