@@ -46,7 +46,7 @@ trait Engine extends Semantics {
   class PathImpl(val path: List[Slot]) extends Path with Equals {
     def push(s: Slot): Path = new PathImpl(s :: path)
     def pull(): Path = path match {
-      case s :: p => new PathImpl(p)
+      case _ :: p => new PathImpl(p)
       case _ => throw new Exception()
     }
 
