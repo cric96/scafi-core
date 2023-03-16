@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2016-2019, Roberto Casadei, Mirko Viroli, and contributors.
  * See the LICENSE file distributed with this work for additional information regarding copyright ownership.
-*/
+ */
 
 package it.unibo.scafi.core
 
@@ -22,13 +22,14 @@ trait Engine extends Semantics {
   override type CONTEXT = Context with ContextOps
   override type FACTORY = Factory
 
-  override implicit val factory: EngineFactory = new EngineFactory
+  implicit override val factory: EngineFactory = new EngineFactory
 
-  class ExportImpl(private var map: Map[Path,Any] = Map.empty) extends Export with ExportOps with Equals { self: EXPORT =>
-    override def put[A](path: Path, value: A) : A = { map += (path -> value); value }
-    override def get[A](path: Path): Option[A] = map.get(path).map { case x:A @unchecked => x }
+  class ExportImpl(private var map: Map[Path, Any] = Map.empty) extends Export with ExportOps with Equals {
+    self: EXPORT =>
+    override def put[A](path: Path, value: A): A = { map += (path -> value); value }
+    override def get[A](path: Path): Option[A] = map.get(path).map(_.asInstanceOf[A])
     override def root[A](): A = get[A](factory.emptyPath()).get
-    override def paths : Map[Path,Any] = map
+    override def paths: Map[Path, Any] = map
 
     override def equals(o: Any): Boolean = o match {
       case x: ExportOps => x.paths == map
@@ -69,50 +70,50 @@ trait Engine extends Semantics {
     override def head: Slot = path.head
   }
 
-  abstract class BaseContextImpl(val selfId: ID,
-                                 _exports: Iterable[(ID, EXPORT)])
-    extends Context with ContextOps { self: CONTEXT =>
+  abstract class BaseContextImpl(val selfId: ID, _exports: Iterable[(ID, EXPORT)]) extends Context with ContextOps {
+    self: CONTEXT =>
 
-    private var exportsMap : Map[ID,EXPORT] = _exports.toMap
-    def updateExport(id: ID, export:EXPORT): Unit = exportsMap += id -> export
+    private var exportsMap: Map[ID, EXPORT] = _exports.toMap
+    def updateExport(id: ID, export: EXPORT): Unit = exportsMap += id -> export
 
     override def exports(): Iterable[(ID, EXPORT)] = exportsMap
 
-    def readSlot[A](i: ID, p:Path): Option[A] = {
-      exportsMap get(i) flatMap (_.get[A](p))
-    }
+    def readSlot[A](i: ID, p: Path): Option[A] =
+      exportsMap get i flatMap (_.get[A](p))
   }
 
   class ContextImpl(
-                     selfId: ID,
-                     exports: Iterable[(ID,EXPORT)],
-                     val localSensor: GMap[CNAME,Any],
-                     val nbrSensor: GMap[CNAME,GMap[ID,Any]])
-    extends BaseContextImpl(selfId, exports) { self: CONTEXT =>
+      selfId: ID,
+      exports: Iterable[(ID, EXPORT)],
+      val localSensor: GMap[CNAME, Any],
+      val nbrSensor: GMap[CNAME, GMap[ID, Any]]
+  ) extends BaseContextImpl(selfId, exports) { self: CONTEXT =>
 
     override def toString(): String =
       s"C[\n\tI:$selfId,\n\tE:$exports,\n\tS1:$localSensor,\n\tS2:$nbrSensor\n]"
 
     override def sense[T](localSensorName: CNAME): Option[T] =
-      localSensor.get(localSensorName).map { case x:T @unchecked => x }
+      localSensor.get(localSensorName).map { case x: T @unchecked => x }
 
     override def nbrSense[T](nbrSensorName: CNAME)(nbr: ID): Option[T] =
-      nbrSensor.get(nbrSensorName).flatMap(_.get(nbr)).map { case x:T @unchecked => x }
+      nbrSensor.get(nbrSensorName).flatMap(_.get(nbr)).map { case x: T @unchecked => x }
   }
 
   class EngineFactory extends Factory { self: FACTORY =>
     override def emptyPath(): Path = new PathImpl(List())
     override def emptyExport(): EXPORT = new ExportImpl
-    override def path(slots: Slot*): Path = new PathImpl(List(slots:_*).reverse)
-    override def export(exps: (Path,Any)*): EXPORT = {
+    override def path(slots: Slot*): Path = new PathImpl(List(slots: _*).reverse)
+    override def export(exps: (Path, Any)*): EXPORT = {
       val exp = new ExportImpl()
-      exps.foreach { case (p,v) => exp.put(p,v) }
+      exps.foreach { case (p, v) => exp.put(p, v) }
       exp
     }
-    override def context(selfId: ID,
-                         exports: Map[ID,EXPORT],
-                         lsens: Map[CNAME,Any] = Map.empty,
-                         nbsens: Map[CNAME,Map[ID,Any]] = Map.empty): CONTEXT =
+    override def context(
+        selfId: ID,
+        exports: Map[ID, EXPORT],
+        lsens: Map[CNAME, Any] = Map.empty,
+        nbsens: Map[CNAME, Map[ID, Any]] = Map.empty
+    ): CONTEXT =
       new ContextImpl(selfId, exports, lsens, nbsens)
   }
 
