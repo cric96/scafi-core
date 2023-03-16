@@ -143,15 +143,6 @@ trait Semantics extends Core with Language {
         }
       }
 
-    override def aggregate[T](f: => T): T =
-      vm.nest(FunCall[T](vm.index, vm.elicitAggregateFunctionTag()))(write = vm.unlessFoldingOnOthers) {
-        vm.neighbour match {
-          case Some(nbr) if nbr != vm.self => vm.loadFunction()()
-          case Some(nbr) if nbr == vm.self => vm.saveFunction(f); f
-          case _ => f
-        }
-      }
-
     def sense[A](name: CNAME): A = vm.localSense(name)
 
     def nbrvar[A](name: CNAME): A = vm.neighbourSense(name)
@@ -203,16 +194,11 @@ trait Semantics extends Core with Language {
 
     def alignedNeighbours(): List[ID]
 
-    def elicitAggregateFunctionTag(): Any
-
     def isolate[A](expr: => A): A
 
     def newExportStack: Any
     def discardExport: Any
     def mergeExport: Any
-
-    def saveFunction[T](f: => T): Unit
-    def loadFunction[T](): () => T
 
     def unlessFoldingOnOthers: Boolean = neighbour.map(_ == self).getOrElse(true)
     def onlyWhenFoldingOnSelf: Boolean = neighbour.map(_ == self).getOrElse(false)
@@ -228,7 +214,6 @@ trait Semantics extends Core with Language {
   }
 
   class RoundVMImpl(val context: CONTEXT) extends RoundVM {
-    var aggregateFunctions: Map[Path, () => Any] = Map.empty
     var exportStack: List[EXPORT] = List(factory.emptyExport)
     var status: VMStatus = VMStatus()
     var isolated = false // When true, neighbours are scoped out
@@ -270,12 +255,6 @@ trait Semantics extends Core with Language {
             .toList
       }
 
-    override def elicitAggregateFunctionTag(): Any =
-      Thread.currentThread().getStackTrace()(PlatformDependentConstants.StackTracePosition)
-    // Thread.currentThread().getStackTrace()(PlatformDependentConstants.StackTracePosition) // Bad performance
-    // sun.reflect.Reflection.getCallerClass(PlatformDependentConstants.CallerClassPosition) // Better performance but not available in Java 11
-    // Since Java 9, use StackWalker
-
     override def isolate[A](expr: => A): A = {
       val wasIsolated = this.isolated
       try {
@@ -283,12 +262,6 @@ trait Semantics extends Core with Language {
         expr
       } finally this.isolated = wasIsolated
     }
-
-    override def saveFunction[T](f: => T): Unit =
-      aggregateFunctions += localFunctionSlot -> (() => f)
-
-    override def loadFunction[T](): () => T =
-      () => aggregateFunctions(localFunctionSlot)() match { case x: T @unchecked => x }
 
     private def localFunctionSlot[T] = status.path
       .pull()
