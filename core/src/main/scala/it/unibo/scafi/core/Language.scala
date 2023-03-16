@@ -28,6 +28,7 @@ trait Language { self: Core =>
     def foldhood[A](init: => A)(aggr: (A, A) => A)(expr: => A): A
     def aggregate[A](f: => A): A
     def align[K,V](key: K)(comp: K => V): V
+    def branch[A](cond: => Boolean)(th: => A)(el: => A): A
 
     // Contextual, but foundational
     def mid(): ID
