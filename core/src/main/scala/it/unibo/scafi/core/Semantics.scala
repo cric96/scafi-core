@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2016-2019, Roberto Casadei, Mirko Viroli, and contributors.
  * See the LICENSE file distributed with this work for additional information regarding copyright ownership.
-*/
+ */
 
 package it.unibo.scafi.core
 
@@ -30,7 +30,7 @@ trait Semantics extends Core with Language {
   implicit val factory: Factory
 
   sealed trait Slot {
-    def ->(v: Any): (Path,Any) = (factory.path(this), v)
+    def ->(v: Any): (Path, Any) = (factory.path(this), v)
     def /(s: Slot): Path = factory.path(this, s)
   }
   final case class Nbr[A](index: Int) extends Slot
@@ -38,6 +38,7 @@ trait Semantics extends Core with Language {
   final case class FunCall[A](index: Int, funId: Any) extends Slot
   final case class FoldHood[A](index: Int) extends Slot
   final case class Scope[K](key: K) extends Slot
+  final case class Branch[A](index: Int, tag: Boolean) extends Slot
 
   trait Path {
     def push(slot: Slot): Path
@@ -53,7 +54,7 @@ trait Semantics extends Core with Language {
   trait ExportOps { self: EXPORT =>
     def put[A](path: Path, value: A): A
     def get[A](path: Path): Option[A]
-    def paths: Map[Path,Any]
+    def paths: Map[Path, Any]
     def getMap[A]: Map[Path, A] = paths.mapValues { case x: A @unchecked => x }.toMap
   }
 
@@ -65,11 +66,13 @@ trait Semantics extends Core with Language {
     def emptyPath(): Path
     def emptyExport(): EXPORT
     def path(slots: Slot*): Path
-    def export(exps: (Path,Any)*): EXPORT
-    def context(selfId: ID,
-                exports: Map[ID,EXPORT],
-                lsens: Map[CNAME,Any] = Map.empty,
-                nbsens: Map[CNAME,Map[ID,Any]] = Map.empty): CONTEXT
+    def export(exps: (Path, Any)*): EXPORT
+    def context(
+        selfId: ID,
+        exports: Map[ID, EXPORT],
+        lsens: Map[CNAME, Any] = Map.empty,
+        nbsens: Map[CNAME, Map[ID, Any]] = Map.empty
+    ): CONTEXT
     def /(): Path = emptyPath()
     def /(s: Slot): Path = path(s)
   }
@@ -90,11 +93,10 @@ trait Semantics extends Core with Language {
 
     var vm: RoundVM = _
 
-    def apply(c: CONTEXT): EXPORT = {
-      round(c,main())
-    }
+    def apply(c: CONTEXT): EXPORT =
+      round(c, main())
 
-    def round(c: CONTEXT, e: =>Any = main()): EXPORT = {
+    def round(c: CONTEXT, e: => Any = main()): EXPORT = {
       vm = new RoundVMImpl(c)
       val result = e
       vm.registerRoot(result)
@@ -107,7 +109,7 @@ trait Semantics extends Core with Language {
 
     override def mid(): ID = vm.self
 
-    override def rep[A](init: =>A)(fun: (A) => A): A = {
+    override def rep[A](init: => A)(fun: (A) => A): A = {
       vm.nest(Rep[A](vm.index))(write = vm.unlessFoldingOnOthers) {
         vm.locally {
           fun(vm.previousRoundVal.getOrElse(init))
@@ -118,16 +120,26 @@ trait Semantics extends Core with Language {
     override def foldhood[A](init: => A)(aggr: (A, A) => A)(expr: => A): A = {
       vm.nest(FoldHood[A](vm.index))(write = true) { // write export always for performance reason on nesting
         val nbrField = vm.alignedNeighbours
-          .map(id => vm.foldedEval(expr)(id).getOrElse(vm.locally { init }))
-        vm.isolate { nbrField.fold(vm.locally { init })((x,y) => aggr(x,y) ) }
+          .map(id => vm.foldedEval(expr)(id).getOrElse(vm.locally(init)))
+        vm.isolate(nbrField.fold(vm.locally(init))((x, y) => aggr(x, y)))
+      }
+    }
+
+    override def branch[A](cond: => Boolean)(thn: => A)(els: => A): A = {
+      val tag = vm.locally(cond)
+      vm.nest(Branch[A](vm.index, tag))(write = vm.unlessFoldingOnOthers) {
+        vm.neighbour match {
+          case Some(nbr) if nbr != vm.self => vm.neighbourVal
+          case _ => if (tag) vm.locally(thn) else vm.locally(els)
+        }
       }
     }
 
     override def nbr[A](expr: => A): A =
       vm.nest(Nbr[A](vm.index))(write = vm.onlyWhenFoldingOnSelf) {
         vm.neighbour match {
-          case Some(nbr) if (nbr != vm.self) => vm.neighbourVal
-          case _  => expr
+          case Some(nbr) if nbr != vm.self => vm.neighbourVal
+          case _ => expr
         }
       }
 
@@ -138,11 +150,6 @@ trait Semantics extends Core with Language {
           case Some(nbr) if nbr == vm.self => vm.saveFunction(f); f
           case _ => f
         }
-      }
-
-    override def align[K,V](key: K)(proc: K => V): V =
-      vm.nest[V](Scope[K](key))(write = vm.unlessFoldingOnOthers, inc = false){
-        proc(key)
       }
 
     def sense[A](name: CNAME): A = vm.localSense(name)
@@ -205,59 +212,54 @@ trait Semantics extends Core with Language {
     def mergeExport: Any
 
     def saveFunction[T](f: => T): Unit
-    def loadFunction[T](): ()=>T
+    def loadFunction[T](): () => T
 
-    def unlessFoldingOnOthers: Boolean = neighbour.map(_==self).getOrElse(true)
-    def onlyWhenFoldingOnSelf: Boolean = neighbour.map(_==self).getOrElse(false)
+    def unlessFoldingOnOthers: Boolean = neighbour.map(_ == self).getOrElse(true)
+    def onlyWhenFoldingOnSelf: Boolean = neighbour.map(_ == self).getOrElse(false)
   }
 
   object RoundVM {
     def ensure(b: => Boolean, s: String): Unit = {
       b match {
         case false => throw new Exception(s)
-        case _     =>
+        case _ =>
       }
     }
   }
 
   class RoundVMImpl(val context: CONTEXT) extends RoundVM {
-    var aggregateFunctions: Map[Path,()=>Any] = Map.empty
+    var aggregateFunctions: Map[Path, () => Any] = Map.empty
     var exportStack: List[EXPORT] = List(factory.emptyExport)
     var status: VMStatus = VMStatus()
     var isolated = false // When true, neighbours are scoped out
 
-    override def foldedEval[A](expr: =>A)(id: ID): Option[A] =
+    override def foldedEval[A](expr: => A)(id: ID): Option[A] =
       handling(classOf[OutOfDomainException]) by (_ => None) apply {
         try {
           status = status.push()
           status = status.foldInto(Some(id))
           Some(expr)
-        } finally {
-          status = status.pop()
-        }
+        } finally status = status.pop()
       }
 
     override def nest[A](slot: Slot)(write: Boolean, inc: Boolean = true)(expr: => A): A = {
       try {
-        status = status.push().nest(slot)  // prepare nested call
-        if (write) export.get(status.path).getOrElse(export.put(status.path, expr)) else expr  // function return value is result of expr
-      } finally {
-        status = if(inc) status.pop().incIndex() else status.pop() // do not forget to restore the status
-      }
+        status = status.push().nest(slot) // prepare nested call
+        if (write) export.get(status.path).getOrElse(export.put(status.path, expr))
+        else expr // function return value is result of expr
+      } finally status = if (inc) status.pop().incIndex() else status.pop() // do not forget to restore the status
     }
 
-    override def locally[A](a: =>A): A = {
+    override def locally[A](a: => A): A = {
       val currentNeighbour = neighbour
-      try{
+      try {
         status = status.foldOut()
         a
-      } finally {
-        status = status.foldInto(currentNeighbour)
-      }
+      } finally status = status.foldInto(currentNeighbour)
     }
 
     override def alignedNeighbours(): List[ID] =
-      if(isolated) {
+      if (isolated) {
         List()
       } else {
         self ::
@@ -268,7 +270,8 @@ trait Semantics extends Core with Language {
             .toList
       }
 
-    override def elicitAggregateFunctionTag(): Any = Thread.currentThread().getStackTrace()(PlatformDependentConstants.StackTracePosition)
+    override def elicitAggregateFunctionTag(): Any =
+      Thread.currentThread().getStackTrace()(PlatformDependentConstants.StackTracePosition)
     // Thread.currentThread().getStackTrace()(PlatformDependentConstants.StackTracePosition) // Bad performance
     // sun.reflect.Reflection.getCallerClass(PlatformDependentConstants.CallerClassPosition) // Better performance but not available in Java 11
     // Since Java 9, use StackWalker
@@ -278,21 +281,18 @@ trait Semantics extends Core with Language {
       try {
         this.isolated = true
         expr
-      } finally {
-        this.isolated = wasIsolated
-      }
+      } finally this.isolated = wasIsolated
     }
 
     override def saveFunction[T](f: => T): Unit =
-      aggregateFunctions += localFunctionSlot -> (() => f )
+      aggregateFunctions += localFunctionSlot -> (() => f)
 
     override def loadFunction[T](): () => T =
       () => aggregateFunctions(localFunctionSlot)() match { case x: T @unchecked => x }
 
-    private def localFunctionSlot[T] = status.path.pull().push(FunCall[T]((
-      (status.path.head: @unchecked) match { case x: FunCall[_] => x }).index,
-      FunctionIdPlaceholder)
-    )
+    private def localFunctionSlot[T] = status.path
+      .pull()
+      .push(FunCall[T](((status.path.head: @unchecked) match { case x: FunCall[_] => x }).index, FunctionIdPlaceholder))
     private val FunctionIdPlaceholder = "f"
 
     override def newExportStack: Any = exportStack = factory.emptyExport() :: exportStack
@@ -322,11 +322,12 @@ trait Semantics extends Core with Language {
     def apply(): VMStatus = VMStatusImpl()
   }
 
-  private final case class VMStatusImpl(
-                                       path: Path = factory.emptyPath(),
-                                       index: Int = 0,
-                                       neighbour: Option[ID] = None,
-                                       stack: List[(Path, Int, Option[ID])] = List()) extends VMStatus {
+  final private case class VMStatusImpl(
+      path: Path = factory.emptyPath(),
+      index: Int = 0,
+      neighbour: Option[ID] = None,
+      stack: List[(Path, Int, Option[ID])] = List()
+  ) extends VMStatus {
 
     def isFolding: Boolean = neighbour.isDefined
     def foldInto(id: Option[ID]): VMStatus = VMStatusImpl(path, index, id, stack)
@@ -334,7 +335,7 @@ trait Semantics extends Core with Language {
     def push(): VMStatus = VMStatusImpl(path, index, neighbour, (path, index, neighbour) :: stack)
     def pop(): VMStatus = stack match {
       case (p, i, n) :: s => VMStatusImpl(p, i, n, s)
-      case _           => throw new Exception()
+      case _ => throw new Exception()
     }
     def nest(s: Slot): VMStatus = VMStatusImpl(path.push(s), 0, neighbour, stack)
     def incIndex(): VMStatus = VMStatusImpl(path, index + 1, neighbour, stack)

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2016-2019, Roberto Casadei, Mirko Viroli, and contributors.
  * See the LICENSE file distributed with this work for additional information regarding copyright ownership.
-*/
+ */
 
 package it.unibo.scafi.core
 
@@ -24,10 +24,9 @@ trait Language { self: Core =>
    */
   trait Constructs {
     def nbr[A](expr: => A): A
-    def rep[A](init: =>A)(fun: (A) => A): A
+    def rep[A](init: => A)(fun: (A) => A): A
     def foldhood[A](init: => A)(aggr: (A, A) => A)(expr: => A): A
     def aggregate[A](f: => A): A
-    def align[K,V](key: K)(comp: K => V): V
     def branch[A](cond: => Boolean)(th: => A)(el: => A): A
 
     // Contextual, but foundational
