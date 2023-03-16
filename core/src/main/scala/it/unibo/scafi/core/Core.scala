@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2016-2019, Roberto Casadei, Mirko Viroli, and contributors.
  * See the LICENSE file distributed with this work for additional information regarding copyright ownership.
-*/
+ */
 
 package it.unibo.scafi.core
 
@@ -11,16 +11,6 @@ package it.unibo.scafi.core
  */
 
 trait Core {
-
-  /**
-    *  Name of a capability, including
-    *  - local sensors (sensors receiving information from a node)
-    *  - neighbourhood sensors (sensors receiving information from neighbours, like estimated distances)
-    */
-  type CNAME
-
-  def cnameFromString(s: String): CNAME
-
   /**
    *  The unique identifier of a node
    */
@@ -60,8 +50,8 @@ trait Core {
     */
   trait Context {
     def selfId: ID
-    def exports(): Iterable[(ID,EXPORT)]
-    def sense[T](localSensorName: CNAME): Option[T]
-    def nbrSense[T](nbrSensorName: CNAME)(nbr: ID): Option[T] = sense[ID=>T](nbrSensorName).map(_(nbr))
+    def exports(): Iterable[(ID, EXPORT)]
+    def sense[T](localSensorName: SensorId): Option[T]
+    def nbrSense[T](nbrSensorName: SensorId)(nbr: ID): Option[T] = sense[ID => T](nbrSensorName).map(_(nbr))
   }
 }

@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2016-2019, Roberto Casadei, Mirko Viroli, and contributors.
  * See the LICENSE file distributed with this work for additional information regarding copyright ownership.
-*/
+ */
 
 package it.unibo.scafi.platform
 
-import it.unibo.scafi.core.{Core, Engine}
+import it.unibo.scafi.core.{Core, Engine, SensorId}
 import it.unibo.scafi.space.MetricSpatialAbstraction
 import it.unibo.scafi.time.TimeAbstraction
 
@@ -17,10 +17,6 @@ import scala.concurrent.duration.FiniteDuration
  */
 trait Platform {
   self: Platform.PlatformDependency =>
-
-  trait StandardPlatformSensorNames {
-    val LSNS_RANDOM: CNAME = cnameFromString("LSNS_RANDOM")
-  }
 }
 
 object Platform {
@@ -40,14 +36,6 @@ trait TimeAwarePlatform extends Platform {
     def nbrDelay(): FiniteDuration
     def nbrLag(): FiniteDuration
   }
-
-  trait StandardTemporalSensorNames {
-    val LSNS_TIME: CNAME = cnameFromString("LSNS_TIME")
-    val LSNS_TIMESTAMP: CNAME = cnameFromString("LSNS_TIMESTAMP")
-    val LSNS_DELTA_TIME: CNAME = cnameFromString("LSNS_DELTA_TIME")
-    val NBR_LAG: CNAME = cnameFromString("NBR_LAG")
-    val NBR_DELAY: CNAME = cnameFromString("NBR_DELAY")
-  }
 }
 
 trait SpaceAwarePlatform extends Platform {
@@ -59,20 +47,12 @@ trait SpaceAwarePlatform extends Platform {
     def nbrRange(): D
     def nbrVector(): P
   }
-
-  trait StandardSpatialSensorNames {
-    val LSNS_POSITION: CNAME = cnameFromString("LSNS_POSITION")
-    val NBR_VECTOR: CNAME = cnameFromString("NBR_VECTOR")
-    val NBR_RANGE: CNAME = cnameFromString("NBR_RANGE")
-  }
 }
 
 trait SpaceTimeAwarePlatform extends SpaceAwarePlatform with TimeAwarePlatform {
   self: SpaceTimeAwarePlatform.PlatformDependency =>
 
-  trait SpaceTimeAwareDevice
-    extends SpaceAwareDevice
-      with TimeAwareDevice
+  trait SpaceTimeAwareDevice extends SpaceAwareDevice with TimeAwareDevice
 }
 
 object SpaceTimeAwarePlatform {
@@ -87,12 +67,16 @@ trait SimulationPlatform extends SpaceTimeAwarePlatform {
   trait Network {
     def ids: Set[ID]
     def neighbourhood(id: ID): Set[ID]
-    def localSensor[A](name: CNAME)(id: ID): A
-    def nbrSensor[A](name: CNAME)(id: ID)(idn: ID): A
+    def localSensor[A](name: SensorId)(id: ID): A
+    def nbrSensor[A](name: SensorId)(id: ID)(idn: ID): A
     def export(id: ID): Option[EXPORT]
     def exports(): Map[ID, Option[EXPORT]]
-    def sensorState(filter: (CNAME,ID) => Boolean = (s,n) => true): collection.Map[CNAME, collection.Map[ID,Any]]
-    def neighbouringSensorState(filter: (CNAME,ID,ID) => Boolean = (s,n,nbr) => true): collection.Map[CNAME, collection.Map[ID, collection.Map[ID, Any]]]
+    def sensorState(
+        filter: (SensorId, ID) => Boolean = (s, n) => true
+    ): collection.Map[SensorId, collection.Map[ID, Any]]
+    def neighbouringSensorState(
+        filter: (SensorId, ID, ID) => Boolean = (s, n, nbr) => true
+    ): collection.Map[SensorId, collection.Map[ID, collection.Map[ID, Any]]]
   }
 }
 

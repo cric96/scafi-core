@@ -69,8 +69,8 @@ trait Semantics extends Core with Language {
     def context(
         selfId: ID,
         exports: Map[ID, EXPORT],
-        lsens: Map[CNAME, Any] = Map.empty,
-        nbsens: Map[CNAME, Map[ID, Any]] = Map.empty
+        lsens: Map[SensorId, Any] = Map.empty,
+        nbsens: Map[SensorId, Map[ID, Any]] = Map.empty
     ): CONTEXT
     def /(): Path = emptyPath()
     def /(s: Slot): Path = path(s)
@@ -142,9 +142,9 @@ trait Semantics extends Core with Language {
         }
       }
 
-    def sense[A](name: CNAME): A = vm.localSense(name)
+    def sense[A](name: SensorId): A = vm.localSense(name)
 
-    def nbrvar[A](name: CNAME): A = vm.neighbourSense(name)
+    def nbrvar[A](name: SensorId): A = vm.neighbourSense(name)
   }
 
   trait RoundVM {
@@ -176,11 +176,11 @@ trait Semantics extends Core with Language {
       .readSlot[A](neighbour.get, status.path)
       .getOrElse(throw OutOfDomainException(context.selfId, neighbour.get, status.path))
 
-    def localSense[A](name: CNAME): A = context
+    def localSense[A](name: SensorId): A = context
       .sense[A](name)
       .getOrElse(throw new SensorUnknownException(self, name))
 
-    def neighbourSense[A](name: CNAME): A = {
+    def neighbourSense[A](name: SensorId): A = {
       RoundVM.ensure(neighbour.isDefined, "Neighbouring sensor must be queried in a nbr-dependent context.")
       context.nbrSense(name)(neighbour.get).getOrElse(throw new NbrSensorUnknownException(self, name, neighbour.get))
     }
@@ -312,11 +312,11 @@ trait Semantics extends Core with Language {
     override def toString: String = s"OutOfDomainException: $selfId , $nbr, $path"
   }
 
-  final case class SensorUnknownException(selfId: ID, name: CNAME) extends Exception() {
+  final case class SensorUnknownException(selfId: ID, name: SensorId) extends Exception() {
     override def toString: String = s"SensorUnknownException: $selfId , $name"
   }
 
-  final case class NbrSensorUnknownException(selfId: ID, name: CNAME, nbr: ID) extends Exception() {
+  final case class NbrSensorUnknownException(selfId: ID, name: SensorId, nbr: ID) extends Exception() {
     override def toString: String = s"NbrSensorUnknownException: $selfId , $name, $nbr"
   }
 }

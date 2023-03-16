@@ -1,16 +1,17 @@
 /*
  * Copyright (C) 2016-2019, Roberto Casadei, Mirko Viroli, and contributors.
  * See the LICENSE file distributed with this work for additional information regarding copyright ownership.
-*/
+ */
 
 package it.unibo.scafi.test.unit
 
-import it.unibo.scafi.test.CoreTestIncarnation
-import it.unibo.scafi.core.{Core, Engine}
+import it.unibo.scafi.core.SensorId
+import it.unibo.scafi.test.{CoreTestIncarnation, CoreTestUtils}
 import org.scalatest.funspec.AnyFunSpec
+import it.unibo.scafi.core.SimpleSensorId._
 import org.scalatest.matchers.should.Matchers
 
-class TestEngine extends AnyFunSpec with Matchers {
+class TestEngine extends AnyFunSpec with Matchers with CoreTestUtils {
 
   describe("ConcreteSemantics") {
 
@@ -45,26 +46,27 @@ class TestEngine extends AnyFunSpec with Matchers {
       }
     } // END describe("Export implementation")
 
-
     describe("Context implementation") {
-      it ("should support the reading of properties and slots") {
+      it("should support the reading of properties and slots") {
         // ARRANGE
         import factory./
         val exportForId1 = factory.export(/ -> "one")
         val pathNbr = factory.emptyPath().push(Nbr(0))
         val exportForId5 = factory.export(pathNbr -> "five")
+        val localSensors: Map[SensorId, Any] = Map(("s1": SensorId) -> 77, ("s1": SensorId) -> false)
+        val neighborhoodSensors: Map[SensorId, Map[ID, Any]] = Map(("x": SensorId) -> Map(4 -> false))
         val ctx = new ContextImpl(
           selfId = 1,
           exports = Map(1 -> exportForId1, 5 -> exportForId5),
-          localSensor = Map("s1" -> 77, "s2" -> false),
-          nbrSensor = Map("x" -> Map(4 -> false))
+          localSensor = localSensors,
+          nbrSensor = neighborhoodSensors
         )
 
         // ASSERT on fields
         ctx.selfId shouldBe 1
         ctx.exports.size shouldBe 2
-        ctx.localSensor shouldEqual Map("s1" -> 77, "s2" -> false)
-        ctx.nbrSensor shouldEqual Map("x" -> Map(4 -> false))
+        ctx.localSensor shouldEqual localSensors
+        ctx.nbrSensor shouldEqual neighborhoodSensors
 
         // ASSERT readslot
         ctx.readSlot(2, /) shouldBe None
@@ -86,7 +88,7 @@ class TestEngine extends AnyFunSpec with Matchers {
         val tail2a = tail1a.pull()
 
         // ASSERT
-        intercept[Exception]{ tail2a.pull() }
+        intercept[Exception](tail2a.pull())
         path1.matches(new PathImpl(List(Nbr(0)))) shouldBe true
         path2a.matches(new PathImpl(List(Rep(0), Nbr(0)))) shouldBe true
         tail1a.matches(new PathImpl(List(Nbr(0)))) shouldBe true

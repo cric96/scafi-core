@@ -30,8 +30,8 @@ trait Language { self: Core =>
 
     // Contextual, but foundational
     def mid(): ID
-    def sense[A](name: CNAME): A
-    def nbrvar[A](name: CNAME): A
+    def sense[A](name: SensorId): A
+    def nbrvar[A](name: SensorId): A
   }
 
 }

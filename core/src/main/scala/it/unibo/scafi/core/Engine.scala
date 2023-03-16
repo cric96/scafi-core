@@ -82,17 +82,17 @@ trait Engine extends Semantics {
   class ContextImpl(
       selfId: ID,
       exports: Iterable[(ID, EXPORT)],
-      val localSensor: Map[CNAME, Any],
-      val nbrSensor: Map[CNAME, Map[ID, Any]]
+      val localSensor: Map[SensorId, Any],
+      val nbrSensor: Map[SensorId, Map[ID, Any]]
   ) extends BaseContextImpl(selfId, exports) { self: CONTEXT =>
 
     override def toString(): String =
       s"C[\n\tI:$selfId,\n\tE:$exports,\n\tS1:$localSensor,\n\tS2:$nbrSensor\n]"
 
-    override def sense[T](localSensorName: CNAME): Option[T] =
+    override def sense[T](localSensorName: SensorId): Option[T] =
       localSensor.get(localSensorName).map { case x: T @unchecked => x }
 
-    override def nbrSense[T](nbrSensorName: CNAME)(nbr: ID): Option[T] =
+    override def nbrSense[T](nbrSensorName: SensorId)(nbr: ID): Option[T] =
       nbrSensor.get(nbrSensorName).flatMap(_.get(nbr)).map { case x: T @unchecked => x }
   }
 
@@ -108,13 +108,12 @@ trait Engine extends Semantics {
     override def context(
         selfId: ID,
         exports: Map[ID, EXPORT],
-        lsens: Map[CNAME, Any] = Map.empty,
-        nbsens: Map[CNAME, Map[ID, Any]] = Map.empty
+        lsens: Map[SensorId, Any] = Map.empty,
+        nbsens: Map[SensorId, Map[ID, Any]] = Map.empty
     ): CONTEXT =
       new ContextImpl(selfId, exports, lsens, nbsens)
   }
 
   implicit val linearID: Linearizable[ID]
   implicit val interopID: Interop[ID]
-  implicit val interopCNAME: Interop[CNAME]
 }
