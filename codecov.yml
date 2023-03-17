@@ -1,8 +1,0 @@
-ignore:
-    - "spala"
-    - "simulator-gui-new"
-    - "stdlib-ext"
-    - "renderer-3d"
-    - "demos"
-    - "demos-new"
-    - "demos-distributed"
