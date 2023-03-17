@@ -1,6 +1,7 @@
 package it.unibo.scafi.core
 
 import it.unibo.scafi.core.Slot.{Branch, FoldHood, Nbr, Rep}
+import it.unibo.scafi.core.vm.RoundVM
 
 trait ConstructsSemantics extends Language {
   def vm: RoundVM

@@ -1,5 +1,7 @@
-package it.unibo.scafi.core
-import RoundVM._
+package it.unibo.scafi.core.vm
+
+import it.unibo.scafi.core.vm.RoundVM._
+import it.unibo.scafi.core._
 
 import scala.util.control.Exception.handling
 

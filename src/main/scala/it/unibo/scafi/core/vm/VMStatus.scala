@@ -1,4 +1,6 @@
-package it.unibo.scafi.core
+package it.unibo.scafi.core.vm
+
+import it.unibo.scafi.core.{Path, Slot}
 
 trait VMStatus {
   val path: Path

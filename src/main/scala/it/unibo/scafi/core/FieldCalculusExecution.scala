@@ -1,5 +1,7 @@
 package it.unibo.scafi.core
 
+import it.unibo.scafi.core.vm.RoundVM
+
 trait FieldCalculusExecution extends (Context => Export) with ConstructsSemantics {
   type MainResult
   def factory: ExportFactory = ExportFactory()
