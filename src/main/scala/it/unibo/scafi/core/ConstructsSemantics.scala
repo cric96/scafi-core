@@ -17,7 +17,8 @@ trait ConstructsSemantics extends Language {
 
   override def foldhood[A](init: => A)(aggr: (A, A) => A)(expr: => A): A = {
     vm.nest(FoldHood(vm.index))(write = true) { // write export always for performance reason on nesting
-      val nbrField = vm.alignedNeighbours
+      val nbrField = vm
+        .alignedNeighbours()
         .map(id => vm.foldedEval(expr)(id).getOrElse(vm.locally(init)))
       vm.isolate(nbrField.fold(vm.locally(init))((x, y) => aggr(x, y)))
     }

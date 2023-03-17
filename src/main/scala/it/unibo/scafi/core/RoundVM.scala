@@ -42,7 +42,7 @@ trait RoundVM {
     RoundVM.ensure(neighbour.isDefined, "Neighbouring sensor must be queried in a nbr-dependent context.")
     context
       .neighborhoodSense(name)(neighbour.get)
-      .getOrElse(throw new NbrSensorUnknownException(self, name, neighbour.get))
+      .getOrElse(throw NbrSensorUnknownException(self, name, neighbour.get))
   }
 
   def foldedEval[A](expr: => A)(id: Int): Option[A]
@@ -66,12 +66,8 @@ trait RoundVM {
 object RoundVM {
   def apply(context: Context, factory: ExportFactory): RoundVM =
     new RoundVMImpl(context, factory)
-  def ensure(b: => Boolean, s: String): Unit = {
-    b match {
-      case false => throw new Exception(s)
-      case _ =>
-    }
-  }
+  def ensure(b: => Boolean, s: String): Unit = if (b) throw new Exception(s)
+
   final case class OutOfDomainException(selfId: Int, nbr: Int, path: Path) extends Exception() {
     override def toString: String = s"OutOfDomainException: $selfId , $nbr, $path"
   }
