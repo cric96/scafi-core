@@ -66,7 +66,7 @@ trait RoundVM {
 object RoundVM {
   def apply(context: Context, factory: ExportFactory): RoundVM =
     new RoundVMImpl(context, factory)
-  def ensure(b: => Boolean, s: String): Unit = if (b) throw new Exception(s)
+  def ensure(b: => Boolean, s: String): Unit = if (!b) throw new Exception(s)
 
   final case class OutOfDomainException(selfId: Int, nbr: Int, path: Path) extends Exception() {
     override def toString: String = s"OutOfDomainException: $selfId , $nbr, $path"
