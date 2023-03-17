@@ -7,7 +7,6 @@ trait Path {
   def isRoot: Boolean
   def head: Slot
   def path: List[Slot]
-
   def /(slot: Slot): Path = push(slot)
 }
 
@@ -40,4 +39,17 @@ class PathImpl(val path: List[Slot]) extends Path with Equals {
   override def hashCode(): Int = path.hashCode
 
   override def head: Slot = path.head
+}
+
+sealed trait Slot {
+  def ->(v: Any): (Path, Any) = (Path(this), v)
+  def /(slot: Slot): Path = Path(this, slot)
+}
+
+object Slot {
+  final case class Nbr(index: Int) extends Slot
+  final case class Rep(index: Int) extends Slot
+  final case class FunCall(index: Int, funId: Any) extends Slot
+  final case class FoldHood(index: Int) extends Slot
+  final case class Branch(index: Int, tag: Boolean) extends Slot
 }
