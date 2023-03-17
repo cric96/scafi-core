@@ -97,8 +97,11 @@ object RoundVM {
     override def nest[A](slot: Slot)(write: Boolean, inc: Boolean = true)(expr: => A): A = {
       try {
         status = status.push().nest(slot) // prepare nested call
-        if (write) export.get(status.path).getOrElse(export.put(status.path, expr))
-        else expr // function return value is result of expr
+        if (write) {
+          export.get(status.path).getOrElse(export.put(status.path, expr))
+        } else {
+          expr
+        } // function return value is result of expr
       } finally status = if (inc) status.pop().incIndex() else status.pop() // do not forget to restore the status
     }
 
@@ -115,7 +118,8 @@ object RoundVM {
         List()
       } else {
         self ::
-          context.exports
+          context
+            .exports()
             .filter(_._1 != self)
             .filter(p => status.path.isRoot || p._2.get(status.path).isDefined)
             .map(_._1)
