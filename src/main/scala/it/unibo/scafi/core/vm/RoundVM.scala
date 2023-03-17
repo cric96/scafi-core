@@ -14,14 +14,14 @@ trait RoundVM {
 
   def status: VMStatus
 
-  def export: Export =
+  def exportData: Export =
     exportStack.head
 
   def self: Int =
     context.selfId
 
   def registerRoot(v: Any): Unit =
-    export.put(factory.emptyPath(), v)
+    exportData.put(factory.emptyPath(), v)
 
   def neighbour: Option[Int] =
     status.neighbour
@@ -100,7 +100,7 @@ object RoundVM {
       try {
         status = status.push().nest(slot) // prepare nested call
         if (write) {
-          export.get(status.path).getOrElse(export.put(status.path, expr))
+          exportData.get(status.path).getOrElse(exportData.put(status.path, expr))
         } else {
           expr
         } // function return value is result of expr
@@ -139,9 +139,9 @@ object RoundVM {
     override def newExportStack: Any = exportStack = factory.emptyExport() :: exportStack
     override def discardExport: Any = exportStack = exportStack.tail
     override def mergeExport: Any = {
-      val toMerge = export
+      val toMerge = exportData
       exportStack = exportStack.tail
-      toMerge.paths.foreach(tp => export.put(tp._1, tp._2))
+      toMerge.paths.foreach(tp => exportData.put(tp._1, tp._2))
     }
   }
 }

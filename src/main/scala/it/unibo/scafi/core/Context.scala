@@ -10,12 +10,12 @@ trait Context {
 
 class ContextImpl(
     val selfId: Int,
-    exports: Iterable[(Int, Export)],
+    currentExports: Iterable[(Int, Export)],
     val localSensor: Map[SensorId, Any],
     val nbrSensor: Map[SensorId, Map[Int, Any]]
 ) extends Context {
-  private var exportsMap: Map[Int, Export] = exports.toMap
-  def updateExport(id: Int, export: Export): Unit = exportsMap += id -> export
+  private var exportsMap: Map[Int, Export] = currentExports.toMap
+  def updateExport(id: Int, exportData: Export): Unit = exportsMap += id -> exportData
 
   override def exports(): Iterable[(Int, Export)] = exportsMap
 
@@ -23,7 +23,7 @@ class ContextImpl(
     exportsMap get i flatMap (_.get[A](p))
 
   override def toString: String =
-    s"C[\n\tI:$selfId,\n\tE:$exports,\n\tS1:$localSensor,\n\tS2:$nbrSensor\n]"
+    s"C[\n\tI:$selfId,\n\tE:$currentExports,\n\tS1:$localSensor,\n\tS2:$nbrSensor\n]"
 
   override def sense[T](localSensorName: SensorId): Option[T] =
     localSensor.get(localSensorName).map(_.asInstanceOf[T])

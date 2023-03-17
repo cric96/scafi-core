@@ -38,7 +38,7 @@ class TestSemanticsByRound extends AnyFunSpec with Matchers {
     round(ctx1, rep(0)(foldhood(_)(_ + _)(1))).root[Int]() shouldBe 1
 
     // ARRANGE
-    val exp = Map(1 -> export(Rep(0) -> 1, Rep(0) / FoldHood(0) -> 1))
+    val exp = Map(1 -> exportFrom(Rep(0) -> 1, Rep(0) / FoldHood(0) -> 1))
     val ctx2 = ctx(selfId = 0, exports = exp)
     // ACT + ASSERT (one neighbor is aligned)
     round(ctx2, rep(0)(foldhood(_)(_ + _)(1))).root[Int]() shouldBe 2
@@ -53,11 +53,11 @@ class TestSemanticsByRound extends AnyFunSpec with Matchers {
      * What exports are produced by 'e + e + e + e' ?
      */
     round(ctx1, expr1 + expr1 + expr1 + expr1) shouldEqual
-      export(/ -> 4)
+      exportFrom(/ -> 4)
     round(ctx1, expr2 + expr2 + expr2 + expr2) shouldEqual
-      export(/ -> 32, Rep(0) -> 8, Rep(1) -> 8, Rep(2) -> 8, Rep(3) -> 8)
+      exportFrom(/ -> 32, Rep(0) -> 8, Rep(1) -> 8, Rep(2) -> 8, Rep(3) -> 8)
     round(ctx1, expr3 + expr3 + expr3 + expr3) shouldEqual
-      export(
+      exportFrom(
         / -> 20,
         FoldHood(0) / Nbr(0) -> 5,
         FoldHood(1) / Nbr(0) -> 5,
@@ -75,18 +75,18 @@ class TestSemanticsByRound extends AnyFunSpec with Matchers {
     //  used inside. It shouldn't be an issue as foldHood is to be used with Nbr.
     // def expr4 = foldhood(0)(_+_)(nbr(sense[Int]("sensor")))
     // round(ctx1, expr4 + expr4 + foldhood(0)(_+_)(1) + expr4 + expr4) shouldEqual
-    //  export(emptyPath() -> 21, path(Nbr(0)) -> 5, path(Nbr(1)) -> 5, path(Nbr(2)) -> 5,
+    //  exportFrom(emptyPath() -> 21, path(Nbr(0)) -> 5, path(Nbr(1)) -> 5, path(Nbr(2)) -> 5,
     //    path(Nbr(3)) -> 5)
 
     /* Given expr 'e' produces exports 'o'
      * What exports are produced by 'rep(0){ rep(o){ e } }' ?
      */
     round(ctx1, rep(0)(x => rep(0)(y => expr1))) shouldEqual
-      export(/ -> 1, Rep(0) -> 1, Rep(0) / Rep(0) -> 1)
+      exportFrom(/ -> 1, Rep(0) -> 1, Rep(0) / Rep(0) -> 1)
     round(ctx1, rep(0)(x => rep(0)(y => expr2))) shouldEqual
-      export(/ -> 8, Rep(0) -> 8, Rep(0) / Rep(0) -> 8, Rep(0) / Rep(0) / Rep(0) -> 8)
+      exportFrom(/ -> 8, Rep(0) -> 8, Rep(0) / Rep(0) -> 8, Rep(0) / Rep(0) / Rep(0) -> 8)
     round(ctx1, rep(0)(x => rep(0)(y => expr3))) shouldEqual
-      export(
+      exportFrom(
         / -> 5,
         Rep(0) -> 5,
         Rep(0) / Rep(0) -> 5,
@@ -97,18 +97,18 @@ class TestSemanticsByRound extends AnyFunSpec with Matchers {
     /* Testing more NBRs within foldhood
      */
     round(ctx1, foldhood(0)(_ + _)(nbr(sense[Int]("sensor")) + nbr(sense[Int]("sensor")))) shouldEqual
-      export(/ -> 10, FoldHood(0) -> 10, FoldHood(0) / Nbr(0) -> 5, FoldHood(0) / Nbr(1) -> 5)
+      exportFrom(/ -> 10, FoldHood(0) -> 10, FoldHood(0) / Nbr(0) -> 5, FoldHood(0) / Nbr(1) -> 5)
   }
 
   FOLDHOOD("should support aggregating information from aligned neighbors") {
     // ARRANGE
-    val exp1 = Map(2 -> export(/ -> "a", FoldHood(0) -> "a"), 4 -> export(/ -> "b", FoldHood(0) -> "b"))
+    val exp1 = Map(2 -> exportFrom(/ -> "a", FoldHood(0) -> "a"), 4 -> exportFrom(/ -> "b", FoldHood(0) -> "b"))
     val ctx1 = ctx(selfId = 0, exports = exp1)
     // ACT + ASSERT
     round(ctx1, foldhood("a")(_ + _)("z")).root[String]() shouldBe "azzz"
 
     // ARRANGE
-    val exp2 = Map(2 -> export(/ -> "a", FoldHood(0) -> "a"), 4 -> export(/ -> "b", FoldHood(0) -> "b"))
+    val exp2 = Map(2 -> exportFrom(/ -> "a", FoldHood(0) -> "a"), 4 -> exportFrom(/ -> "b", FoldHood(0) -> "b"))
     val ctx2 = ctx(selfId = 0, exports = exp2)
     // ACT + ASSERT (should failback to 'init' when neighbors lose alignment within foldhood)
     round(
@@ -128,8 +128,8 @@ class TestSemanticsByRound extends AnyFunSpec with Matchers {
   NBR("should support interaction between aligned devices") {
     // ARRANGE
     val exp1 = Map(
-      1 -> export(/ -> "any", FoldHood(0) -> 1, FoldHood(0) / Nbr(0) -> 1),
-      2 -> export(/ -> "any", FoldHood(0) -> 2, FoldHood(0) / Nbr(0) -> 2)
+      1 -> exportFrom(/ -> "any", FoldHood(0) -> 1, FoldHood(0) / Nbr(0) -> 1),
+      2 -> exportFrom(/ -> "any", FoldHood(0) -> 2, FoldHood(0) / Nbr(0) -> 2)
     )
     val ctx1 = ctx(selfId = 0, exports = exp1)
     // ACT
@@ -149,7 +149,7 @@ class TestSemanticsByRound extends AnyFunSpec with Matchers {
     exp1.get(/(Rep(0))) shouldBe Some(18)
 
     // ARRANGE
-    val exp = Map(0 -> export(Rep(0) -> 7))
+    val exp = Map(0 -> exportFrom(Rep(0) -> 7))
     val ctx2 = ctx(selfId = 0, exports = exp)
     // ACT
     val exp2 = round(ctx2, rep(9)(_ * 2))
@@ -170,7 +170,7 @@ class TestSemanticsByRound extends AnyFunSpec with Matchers {
     //exp.get(path(If(0, false), Rep(0))) shouldBe None
 
     // ACT
-    val ctx2 = ctx(0, Map(0 -> export(Rep(0) -> 1)))
+    val ctx2 = ctx(0, Map(0 -> exportFrom(Rep(0) -> 1)))
     val exp2 = round(ctx2, program)
 
     exp2.root[Int]() shouldBe 2
@@ -205,7 +205,7 @@ class TestSemanticsByRound extends AnyFunSpec with Matchers {
   NBRVAR("should work as a ''sensor'' for neighbors") {
     // ARRANGE
     val nbsens = Map("a" -> Map(0 -> 0, 1 -> 10, 2 -> 17), "b" -> Map(0 -> "x", 1 -> "y", 2 -> "z"))
-    val ctx1 = ctx(0, Map(1 -> export(/ -> 10, FoldHood(0) -> 10)), Map(), nbsens)
+    val ctx1 = ctx(0, Map(1 -> exportFrom(/ -> 10, FoldHood(0) -> 10)), Map(), nbsens)
     // ACT + ASSERT
     round(ctx1, foldhood(0)((a, b) => if (a > b) a else b)(nbrvar[Int]("a"))).root[Int]() shouldBe 10
 
@@ -216,7 +216,7 @@ class TestSemanticsByRound extends AnyFunSpec with Matchers {
   NBRVAR("should fail if the neighborhood ''sensor'' is not available") {
     // ARRANGE
     val nbsens = Map("a" -> Map(0 -> 0, 1 -> 10, 2 -> 17))
-    val ctx1 = ctx(0, Map(1 -> export(/ -> 10)), Map(), nbsens)
+    val ctx1 = ctx(0, Map(1 -> exportFrom(/ -> 10)), Map(), nbsens)
     // ACT + ASSERT (failure because of bad type)
     intercept[AnyRef](round(ctx1, foldhood("")(_ + _)(nbrvar[String]("a"))))
     // ACT + ASSERT (failure because not found)
@@ -226,8 +226,8 @@ class TestSemanticsByRound extends AnyFunSpec with Matchers {
   BUILTIN("minHood and minHood+, maxHood and maxHood+") {
     // ARRANGE
     val exp1 = Map(
-      1 -> export(/ -> "any", FoldHood(0) -> 10, FoldHood(0) / Nbr(0) -> 10),
-      2 -> export(/ -> "any", FoldHood(0) -> 5, FoldHood(0) / Nbr(0) -> 5)
+      1 -> exportFrom(/ -> "any", FoldHood(0) -> 10, FoldHood(0) / Nbr(0) -> 10),
+      2 -> exportFrom(/ -> "any", FoldHood(0) -> 5, FoldHood(0) / Nbr(0) -> 5)
     )
     val ctx1 = ctx(0, exp1, Map("sensor" -> 3, "sensor2" -> 20))
     // ACT + ASSERT
@@ -240,8 +240,8 @@ class TestSemanticsByRound extends AnyFunSpec with Matchers {
      **/
     // ARRANGE
     val exp2 = Map(
-      1 -> export(/ -> "any", FoldHood(0) -> 1, FoldHood(0) / Nbr(0) -> 1, FoldHood(0) / Nbr(1) -> 10),
-      2 -> export(/ -> "any", FoldHood(0) -> 2, FoldHood(0) / Nbr(0) -> 2, FoldHood(0) / Nbr(1) -> 5)
+      1 -> exportFrom(/ -> "any", FoldHood(0) -> 1, FoldHood(0) / Nbr(0) -> 1, FoldHood(0) / Nbr(1) -> 10),
+      2 -> exportFrom(/ -> "any", FoldHood(0) -> 2, FoldHood(0) / Nbr(0) -> 2, FoldHood(0) / Nbr(1) -> 5)
     )
     // Note: the export on Nbr(0) is for the internal call to nbr(mid())
     val ctx2 = ctx(0, exp2, Map("sensor" -> 3, "sensor2" -> 20))
@@ -252,10 +252,11 @@ class TestSemanticsByRound extends AnyFunSpec with Matchers {
 
   Nesting("REP into FOLDHOOD should be supported") {
     // ARRANGE
-    val ctx1 = ctx(0, Map(1 -> export(FoldHood(0) -> 7), 2 -> export(FoldHood(0) -> 7)))
+    val ctx1 = ctx(0, Map(1 -> exportFrom(FoldHood(0) -> 7), 2 -> exportFrom(FoldHood(0) -> 7)))
     def program1 = foldhood("init")(_ + _)(rep(0)(_ + 1) + "")
 
-    val ctx2 = ctx(0, Map(1 -> export(FoldHood(0) -> 7), 2 -> export(FoldHood(0) -> 7, FoldHood(0) / Nbr(0) -> 7)))
+    val ctx2 =
+      ctx(0, Map(1 -> exportFrom(FoldHood(0) -> 7), 2 -> exportFrom(FoldHood(0) -> 7, FoldHood(0) / Nbr(0) -> 7)))
     def program2 = foldhood("init")(_ + _)(nbr(rep(0)(_ + 1)) + "")
 
     // ACT + ASSERT
@@ -279,8 +280,8 @@ class TestSemanticsByRound extends AnyFunSpec with Matchers {
     val ctx1 = ctx(
       0,
       Map(
-        1 -> export(FoldHood(0) -> 7, FoldHood(0) / FoldHood(0) -> 7),
-        2 -> export(
+        1 -> exportFrom(FoldHood(0) -> 7, FoldHood(0) / FoldHood(0) -> 7),
+        2 -> exportFrom(
           FoldHood(0) -> 7,
           FoldHood(0) / Nbr(0) -> 7,
           FoldHood(0) / FoldHood(0) -> 7,

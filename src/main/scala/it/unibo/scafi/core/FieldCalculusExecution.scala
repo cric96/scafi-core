@@ -17,7 +17,7 @@ trait FieldCalculusExecution extends (Context => Export) with ConstructsSemantic
     vm = RoundVM(c, factory)
     val result = e
     vm.registerRoot(result)
-    vm.export
+    vm.exportData
   }
 }
 
